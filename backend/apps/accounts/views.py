@@ -1,10 +1,18 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.db import connection
 
-# Create your views here.
-def server_status (request):
+# Server status
+def server_status(request):
+    try:
+        connection.ensure_connection()
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+
     data = {
-        "message": "Server was running",
-        "status": 201
+        "message": "Server is running",
+        "database": db_status,
+        "status": 200
     }
     return JsonResponse(data)
