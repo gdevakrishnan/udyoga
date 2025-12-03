@@ -1,10 +1,20 @@
-import React from 'react'
+import React, { Fragment, useState } from 'react'
+import AppRouter from './router/Router'
+import AppContext from './context/AppContext'
 
 const App = () => {
+  const [sample, setSample] = useState("Udyoga");
+
+  const context = {
+    sample
+  }
+
   return (
-    <h1 class="text-3xl font-bold underline">
-      Hello world!  
-    </h1>
+    <Fragment>
+      <AppContext.Provider value={context}>
+        <AppRouter />
+      </AppContext.Provider>
+    </Fragment>
   )
 }
 
