@@ -149,8 +149,8 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "ROTATE_REFRESH_TOKENS": True,
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.getenv('ACCESS_TOKEN_EXPIRY'))),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.getenv('REFRESH_TOKEN_EXPIRY')))
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=os.getenv('ACCESS_TOKEN_EXPIRY')),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=os.getenv('REFRESH_TOKEN_EXPIRY'))
 }
 
 JAZZMIN_SETTINGS = {
