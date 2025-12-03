@@ -19,7 +19,7 @@ const Navbar = () => {
                         {
                             links.map((link, index) => {
                                 return (
-                                    <Link to={link.to}>{link.label}</Link>
+                                    <Link to={link.to} key={index}>{link.label}</Link>
                                 );
                             })
                         }

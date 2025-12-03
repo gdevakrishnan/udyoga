@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { registerUser } from "../../serviceWorkers/AuthServiceWorker";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -30,10 +31,31 @@ const Register = () => {
     reader.readAsDataURL(file);
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form data:", formData);
-    // Send formData to Django backend
+
+    const errors = [];
+
+    !username.trim() && errors.push("Username is required");
+    !email.trim() && errors.push("Email is required");
+    !password.trim() && errors.push("Password is required");
+    !confirmPassword.trim() && errors.push("Confirm password is required");
+
+    password !== confirmPassword &&
+      errors.push("Passwords do not match");
+
+    role === "candidate" && !resume &&
+      errors.push("Resume is required for candidates");
+
+    if (errors.length > 0) {
+      alert(errors.join("\n"));
+      return;
+    }
+
+    alert("Form validated successfully!");
+    await registerUser(formData)
+      .then(response => console.log(response))
+      .catch(e => console.log(e.message));
   };
 
   return (
