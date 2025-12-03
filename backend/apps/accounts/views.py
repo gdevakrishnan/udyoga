@@ -1,3 +1,4 @@
+from django.db import connection
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +10,29 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
 
+
+# Server status
+@api_view(["GET"])
+def server_status(request):
+    try:
+        connection.ensure_connection()
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+
+    data = {
+        "message": "Server is running",
+        "database": db_status
+    }
+
+    return Response(
+                {"data": data, "status": 200},
+                status=status.HTTP_200_OK
+            )
+
+
+###########################################
+# Authentication
 
 @api_view(["POST"])
 def register(request):

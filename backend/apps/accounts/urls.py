@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import register, login, refresh_token, me, logout
+from .views import server_status, register, login, refresh_token, me, logout
 
 urlpatterns = [
+    path("server-status/", server_status, name="serve-status"),
     path("auth/register/", register, name="register"),
     path("auth/login/", login, name="login"),
     path("auth/refresh/", refresh_token.as_view(), name="token_refresh"),
