@@ -31,309 +31,242 @@ udyoga/
 
 ---
 
-Below is **a simple, beginner-friendly Django REST Framework (DRF) tutorial** with clear steps and sample code. It returns **JSON responses**, and you can copy & run everything as-is.
+# API Documentation
 
----
+**URL:**
 
-# ✅ **Django REST Framework (DRF) – Simple Tutorial**
-
-We’ll build a tiny API for managing **Books**, using:
-
-* Django
-* Django REST Framework (DRF)
-* JSON responses (automatically handled by DRF)
-
----
-
-# 1️⃣ **Install Django & DRF**
-
-```bash
-pip install django djangorestframework
+```
+POST /auth/register/
 ```
 
----
-
-# 2️⃣ **Create a Django Project**
-
-```bash
-django-admin startproject myproject
-cd myproject
-```
-
----
-
-# 3️⃣ **Create an App**
-
-```bash
-python manage.py startapp books
-```
-
----
-
-# 4️⃣ **Add app & DRF to settings**
-
-`myproject/settings.py`
-
-```python
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    # Third-party
-    'rest_framework',
-
-    # Your app
-    'books',
-]
-```
-
----
-
-# 5️⃣ **Create a Model**
-
-`books/models.py`
-
-```python
-from django.db import models
-
-class Book(models.Model):
-    title = models.CharField(max_length=100)
-    author = models.CharField(max_length=100)
-    published_year = models.IntegerField()
-
-    def __str__(self):
-        return self.title
-```
-
-Apply migration:
-
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-
----
-
-# 6️⃣ **Create a Serializer**
-
-Serializers convert model → JSON.
-
-`books/serializers.py`
-
-```python
-from rest_framework import serializers
-from .models import Book
-
-class BookSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Book
-        fields = '__all__'
-```
-
----
-
-# 7️⃣ **Create API Views**
-
-We will use DRF’s simple APIView.
-
-`books/views.py`
-
-```python
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Book
-from .serializers import BookSerializer
-
-class BookList(APIView):
-    def get(self, request):
-        books = Book.objects.all()
-        serializer = BookSerializer(books, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = BookSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class BookDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return Book.objects.get(pk=pk)
-        except Book.DoesNotExist:
-            return None
-
-    def get(self, request, pk):
-        book = self.get_object(pk)
-        if not book:
-            return Response({"error": "Book not found"}, status=404)
-        serializer = BookSerializer(book)
-        return Response(serializer.data)
-
-    def put(self, request, pk):
-        book = self.get_object(pk)
-        if not book:
-            return Response({"error": "Book not found"}, status=404)
-        serializer = BookSerializer(book, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
-
-    def delete(self, request, pk):
-        book = self.get_object(pk)
-        if not book:
-            return Response({"error": "Book not found"}, status=404)
-        book.delete()
-        return Response(status=204)
-```
-
----
-
-# 8️⃣ **Add URLs**
-
-`books/urls.py`
-
-```python
-from django.urls import path
-from .views import BookList, BookDetail
-
-urlpatterns = [
-    path('books/', BookList.as_view()),
-    path('books/<int:pk>/', BookDetail.as_view()),
-]
-```
-
-Include in main urls:
-
-`myproject/urls.py`
-
-```python
-from django.contrib import admin
-from django.urls import path, include
-
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('books.urls')),
-]
-```
-
----
-
-# 9️⃣ **Run the Server**
-
-```bash
-python manage.py runserver
-```
-
----
-
-# 🔥 **Test Your API (JSON Responses)**
-
-## ➤ GET all books
-
-**GET** `http://127.0.0.1:8000/api/books/`
-
-Response:
-
-```json
-[]
-```
-
----
-
-## ➤ POST a book
-
-**POST** `http://127.0.0.1:8000/api/books/`
-
-### Body (JSON):
+### **Sample Request Body**
 
 ```json
 {
-  "title": "Django for Beginners",
-  "author": "John Doe",
-  "published_year": 2024
+    "username": "john123",
+    "email": "john@example.com",
+    "password": "secret123",
+    "role": "candidate",
+    "resume": "resume.pdf"
 }
 ```
 
-### Response:
+### ✅ **Expected Success Response**
 
 ```json
 {
-  "id": 1,
-  "title": "Django for Beginners",
-  "author": "John Doe",
-  "published_year": 2024
+    "message": "User registered successfully",
+    "status": 201
 }
 ```
 
 ---
 
-## ➤ GET single book
-
-**GET** `http://127.0.0.1:8000/api/books/1/`
+### ❌ **If username already exists**
 
 ```json
 {
-  "id": 1,
-  "title": "Django for Beginners",
-  "author": "John Doe",
-  "published_year": 2024
+    "message": {
+        "username": ["This username already exists"]
+    },
+    "status": 400
 }
 ```
 
 ---
 
-## ➤ PUT update book
-
-**PUT** `http://127.0.0.1:8000/api/books/1/`
+### ❌ **If email already exists**
 
 ```json
 {
-  "title": "Updated Title",
-  "author": "John Doe",
-  "published_year": 2025
+    "message": {
+        "email": ["Email already exists"]
+    },
+    "status": 400
 }
 ```
 
 ---
 
-## ➤ DELETE
-
-**DELETE** `http://127.0.0.1:8000/api/books/1/`
-
-Response:
+### ❌ **If role = candidate and resume missing**
 
 ```json
-{}
+{
+    "message": {
+        "resume": ["Resume is required for candidate role"]
+    },
+    "status": 400
+}
 ```
 
 ---
 
-# 🎉 Completed!
+# ✅ **2️⃣ Login (POST)**
 
-You now have a fully working **REST API in Django** with:
+**URL:**
 
-✔ Models
-✔ Serializers
-✔ API Views
-✔ JSON responses
-✔ CRUD operations
+```
+POST /auth/login/
+```
+
+### **Sample Request**
+
+```json
+{
+    "username": "john123",
+    "password": "secret123"
+}
+```
+
+### ✅ **Expected Success Response**
+
+```json
+{
+    "message": "Login successful",
+    "status": 200,
+    "access": "your_access_token_here",
+    "refresh": "your_refresh_token_here",
+    "user": {
+        "id": 1,
+        "username": "john123",
+        "email": "john@example.com",
+        "role": "candidate",
+        "resume": "resume.pdf",
+        "created_at": "2025-02-06T12:30:00Z",
+        "updated_at": "2025-02-06T12:30:00Z"
+    }
+}
+```
 
 ---
 
-If you want, I can also provide:
+### ❌ **Invalid password or username**
 
-📌 Version using **ViewSets + Routers**
-📌 Version using **generics (ListCreateAPIView, etc.)**
-📌 Add authentication (JWT)
-📌 Add swagger documentation
+```json
+{
+    "message": ["Invalid username or password"],
+    "status": 400
+}
+```
+
+---
+
+# ✅ **3️⃣ Refresh Token (POST)**
+
+**URL:**
+
+```
+POST /auth/refresh/
+```
+
+### **Sample Request**
+
+```json
+{
+    "refresh": "your_refresh_token_here"
+}
+```
+
+### **Response (from SimpleJWT default)**
+
+```json
+{
+    "access": "new_access_token_here"
+}
+```
+
+---
+
+# ✅ **4️⃣ Get Logged-in User (GET)**
+
+**URL:**
+
+```
+GET /auth/me/
+```
+
+### **Headers**
+
+```
+Authorization: Bearer <access_token>
+```
+
+### **Success Response**
+
+```json
+{
+    "message": "User details fetched",
+    "status": 200,
+    "data": {
+        "id": 1,
+        "username": "john123",
+        "email": "john@example.com",
+        "role": "candidate",
+        "resume": "resume.pdf",
+        "created_at": "2025-02-06T12:30:00Z",
+        "updated_at": "2025-02-06T12:30:00Z"
+    }
+}
+```
+
+---
+
+# ✅ **5️⃣ Logout (POST)**
+
+**URL:**
+
+```
+POST /auth/logout/
+```
+
+### **Headers**
+
+```
+Authorization: Bearer <access_token>
+```
+
+### **Sample Request**
+
+```json
+{
+    "refresh": "your_refresh_token_here"
+}
+```
+
+### **Success Response**
+
+```json
+{
+    "message": "Logged out successfully",
+    "status": 200
+}
+```
+
+---
+
+### ❌ **Invalid refresh token**
+
+```json
+{
+    "message": "Invalid refresh token",
+    "status": 400
+}
+```
+
+---
+
+# 🎉 Ready to Test with Postman
+
+You now have:
+✔ All request bodies
+✔ All response bodies
+✔ All success and error examples
+✔ Exact behavior based on your code
+
+If you want, I can also create:
+
+📌 A **Postman Collection JSON file** ready to import
+📌 Swagger/OpenAPI docs
+📌 cURL commands
 
 Just tell me!

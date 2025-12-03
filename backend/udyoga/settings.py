@@ -34,6 +34,7 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(",")
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -150,3 +151,18 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.getenv('ACCESS_TOKEN_EXPIRY'))),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.getenv('REFRESH_TOKEN_EXPIRY')))
 }
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Udyoga",
+    "site_header": "Udyoga Admin",
+    "welcome_sign": "Welcome to Udyoga",
+    "copyright": "Devakrishnan",
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.group": "fas fa-users",
+    },
+    "theme": "dark",
+}
+
+AUTH_USER_MODEL = "accounts.User"

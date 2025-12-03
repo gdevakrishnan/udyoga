@@ -1,79 +1,110 @@
-from django.shortcuts import render
-from django.http import JsonResponse
-from django.db import connection
-
-from rest_framework import generics, status
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework.exceptions import ValidationError
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import status
 
-from .models import Account
-from .serializers import AccountSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenRefreshView
 
-# Server status
-def server_status(request):
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+
+
+@api_view(["POST"])
+def register(request):
     try:
-        connection.ensure_connection()
-        db_status = "connected"
+        serializer = RegisterSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "User registered successfully", "status": 201},
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            {"message": serializer.errors, "status": 400},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    except ValidationError as e:
+        # Make validation errors return 400 (instead of falling into the generic 500 handler)
+        return Response(
+            {"message": e.detail, "status": 400},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     except Exception as e:
-        db_status = f"error: {str(e)}"
+        return Response(
+            {"message": str(e), "status": 500},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
 
-    data = {
-        "message": "Server is running",
-        "database": db_status,
-        "status": 200
-    }
-    return JsonResponse(data)
+@api_view(["POST"])
+def login(request):
+    try:
+        serializer = LoginSerializer(data=request.data)
+
+        if serializer.is_valid():
+            user = serializer.validated_data.get("user")
+            refresh = RefreshToken.for_user(user)
+            user_data = UserSerializer(user).data
+
+            return Response(
+                {
+                    "message": "Login successful",
+                    "status": 200,
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
+                    "user": user_data
+                },
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            {"message": serializer.errors, "status": 400},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    except Exception as e:
+        return Response(
+            {"message": str(e), "status": 500},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
-##############################################
-
-# Authentication
-
-class RegisterView(generics.CreateAPIView):
-    queryset = Account.objects.all()
-    serializer_class = AccountSerializer
-    permission_classes = [AllowAny]
+class refresh_token(TokenRefreshView):
+    pass
 
 
-class LoginView(generics.GenericAPIView):
-    serializer_class = AccountSerializer
-    permission_classes = [AllowAny]
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def me(request):
+    try:
+        serializer = UserSerializer(request.user)
+        return Response(
+            {"message": "User details fetched", "status": 200, "data": serializer.data},
+            status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        return Response(
+            {"message": str(e), "status": 500},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
-    def post(self, request):
-        username = request.data.get("username")
-        password = request.data.get("password")
 
-        # Check credentials manually
-        try:
-            user = Account.objects.get(username=username)
-        except Account.DoesNotExist:
-            return Response({"detail": "Invalid username or password"}, status=400)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    try:
+        refresh_token = request.data.get("refresh")
+        token = RefreshToken(refresh_token)
+        token.blacklist()
 
-        if not user.check_password(password):
-            return Response({"detail": "Invalid username or password"}, status=400)
-
-        # Issue JWT tokens
-        refresh = RefreshToken.for_user(user)
-
-        return Response({
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-            "user": AccountSerializer(user).data
-        })
-
-class LogoutView(generics.GenericAPIView):
-    permission_classes = (IsAuthenticated,)
-
-    def post(self, request):
-        try:
-            refresh_token = request.data["refresh"]
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-            return Response({"detail": "Logged out successfully"}, status=status.HTTP_205_RESET_CONTENT)
-
-        except KeyError:
-            return Response({"detail": "refresh token required"}, status=400)
-
-        except TokenError:
-            return Response({"detail": "invalid or expired token"}, status=400)
+        return Response(
+            {"message": "Logged out successfully", "status": 200},
+            status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        return Response(
+            {"message": "Invalid refresh token", "status": 400},
+            status=status.HTTP_400_BAD_REQUEST
+        )
