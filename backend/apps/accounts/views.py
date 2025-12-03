@@ -27,7 +27,6 @@ def register(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     except ValidationError as e:
-        # Make validation errors return 400 (instead of falling into the generic 500 handler)
         return Response(
             {"message": e.detail, "status": 400},
             status=status.HTTP_400_BAD_REQUEST

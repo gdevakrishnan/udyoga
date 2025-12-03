@@ -1,0 +1,12 @@
+services:
+  - type: server
+    name: udyoga
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn myproject.wsgi:application --bind 0.0.0.0:$PORT"
+    plan: free
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: udyoga.settings
+      - key: PYTHON_VERSION
+        value: 3.12
