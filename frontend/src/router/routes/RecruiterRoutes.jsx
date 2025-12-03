@@ -2,7 +2,7 @@ import Dashboard from "../../pages/recruiter/Dashboard";
 
 const RecruiterRoutes = [
   {
-    path: "hr",
+    path: "recruiter",
     element: <Dashboard />,
   },
 ];
