@@ -11,7 +11,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "role", "resume"]
+        fields = ["username", "email", "password", "role", "resume", "company_name", "company_description"]
 
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
@@ -33,14 +33,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        try:
-            validated_data["password"] = make_password(validated_data["password"])
-            return User.objects.create(**validated_data)
-        except IntegrityError:
-            # Database-level duplicate error
-            raise serializers.ValidationError({
-                "username": "This username already exists"
-            })
+        validated_data["password"] = make_password(validated_data["password"])
+        return User.objects.create(**validated_data)
 
 
 class LoginSerializer(serializers.Serializer):
@@ -65,5 +59,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             "id", "username", "email", "role", "resume",
+            "company_name", "company_description",
             "created_at", "updated_at"
         ]
