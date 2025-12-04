@@ -1,7 +1,41 @@
-# Udyoga
-Udyoga is an AI-powered job portal that connects candidates with the most suitable job opportunities and helps HR teams efficiently manage applications. The platform leverages resume parsing and AI-based job-candidate matching to provide personalized recommendations for both candidates and recruiters.
+# **Udyoga – AI-Powered Career Assistant**
 
-## Folder strucutre
+---
+
+## **1. Introduction**
+
+**Udyoga** is an AI-driven career assistant designed for college students to evaluate job opportunities, assess their fit, and improve their applications. The platform allows students to:
+
+* Paste/upload a **resume**
+* Paste/upload a **job description (JD)**
+* Get a **match score** and **gap analysis**
+* Receive **personalized improvement tips**
+* Explore **job recommendations** based on their profile
+
+Udyoga leverages AI technologies to provide actionable career insights and guidance, making the job application process smarter and more effective.
+
+---
+
+## **2. Tech Stack**
+
+| **Technology / Tool**             | **Purpose in Udyoga**                    | **Why Chosen / Benefits**                                                                                    |
+| --------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **React.js**                      | Frontend UI                              | Fast, component-based, ideal for interactive dashboards and forms for resume/JD upload and analysis results. |
+| **Django REST Framework**         | Backend API                              | Handles requests, user data, and AI processing logic; robust and scalable.                                   |
+| **MongoDB**                       | Database                                 | Stores jobs, user profiles, resume data, and embeddings; flexible document-based schema.                     |
+| **LlamaIndex**                    | Resume & Job embedding + vector storage  | Enables semantic similarity search for accurate resume-job matching.                                         |
+| **LangChain**                     | Job recommendation & conversational AI   | Powers AI-driven reasoning, personalized guidance, and natural language queries.                             |
+| **OpenAI / HuggingFace LLMs**     | Generate actionable advice & resume tips | Produces human-like, contextual improvement suggestions and learning path guidance.                          |
+| **PyMuPDF / Unstructured / OCR**  | Resume parsing                           | Extracts text and structured info from PDFs, DOCs, or scanned resumes efficiently.                           |
+| **Celery + Redis**                | Asynchronous task management             | Handles background processing like embedding generation and resume parsing efficiently.                      |
+| **Tailwind / Chakra UI**          | Frontend styling                         | Provides responsive, modern, and customizable UI components quickly.                                         |
+| **BM25 / TF-IDF**                 | ATS keyword matching                     | Ensures resumes align with job-specific keywords for realistic job matching and gap analysis.                |
+| **Qdrant / Vector DB (optional)** | Fast embedding search                    | Stores embeddings for semantic similarity search, making recommendations fast and scalable.                  |
+
+---
+
+## **3. Folder Structure**
+
 ```
 udyoga/
 ├── backend/
@@ -28,245 +62,91 @@ udyoga/
 └── README.md
 ```
 
+---
+
+## **4. Features**
+
+### **4.1 Resume & Job Description Analysis**
+
+* Upload or paste resume and job description
+* Generates a **match score** (e.g., 8/10)
+* Highlights **missing skills** and **recommended improvements**
+
+### **4.2 Gap Analysis**
+
+* Detects critical missing skills, optional skills, and nice-to-have skills
+* Provides **personalized action tips** to improve applications
+
+### **4.3 Job Recommendations**
+
+* Suggests relevant jobs from the database based on skill match and student profile
+* Prioritizes internships, fresher roles, and preferred locations
+
+### **4.4 Conversational Career Guidance**
+
+* Ask natural language questions such as:
+
+  * “What skills should I learn for this role?”
+  * “How can I improve my resume for a backend position?”
+  * “Generate a learning plan for AWS in 30 days”
+
+### **4.5 Visual Dashboard**
+
+* Skill cloud
+* Match score breakdown
+* Missing skill list
+* Job recommendations
+
+### **4.6 Resume Parsing**
+
+* Extracts structured sections: Skills, Experience, Education, Projects, Achievements
+* Supports PDFs, DOCs, and scanned resumes
 
 ---
 
-# API Documentation
+## **5. Running the Project**
 
-**URL:**
+### **Backend (Django)**
 
-```
-POST /auth/register/
-```
+1. Create a virtual environment:
 
-### **Sample Request Body**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate   # Linux / Mac
+   venv\Scripts\activate      # Windows
+   ```
+2. Install dependencies:
 
-```json
-{
-    "username": "john123",
-    "email": "john@example.com",
-    "password": "secret123",
-    "role": "candidate",
-    "resume": "resume.pdf"
-}
-```
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
+3. Configure MongoDB connection in `settings.py`.
+4. Run Django server:
 
-### ✅ **Expected Success Response**
+   ```bash
+   python manage.py runserver
+   ```
 
-```json
-{
-    "message": "User registered successfully",
-    "status": 201
-}
-```
+### **Frontend (React)**
 
----
+1. Navigate to frontend folder:
 
-### ❌ **If username already exists**
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies:
 
-```json
-{
-    "message": {
-        "username": ["This username already exists"]
-    },
-    "status": 400
-}
-```
+   ```bash
+   npm install
+   ```
+3. Start development server:
 
----
+   ```bash
+   npm start
+   ```
 
-### ❌ **If email already exists**
+### **Deployment**
 
-```json
-{
-    "message": {
-        "email": ["Email already exists"]
-    },
-    "status": 400
-}
-```
-
----
-
-### ❌ **If role = candidate and resume missing**
-
-```json
-{
-    "message": {
-        "resume": ["Resume is required for candidate role"]
-    },
-    "status": 400
-}
-```
-
----
-
-# ✅ **2️⃣ Login (POST)**
-
-**URL:**
-
-```
-POST /auth/login/
-```
-
-### **Sample Request**
-
-```json
-{
-    "username": "john123",
-    "password": "secret123"
-}
-```
-
-### ✅ **Expected Success Response**
-
-```json
-{
-    "message": "Login successful",
-    "status": 200,
-    "access": "your_access_token_here",
-    "refresh": "your_refresh_token_here",
-    "user": {
-        "id": 1,
-        "username": "john123",
-        "email": "john@example.com",
-        "role": "candidate",
-        "resume": "resume.pdf",
-        "created_at": "2025-02-06T12:30:00Z",
-        "updated_at": "2025-02-06T12:30:00Z"
-    }
-}
-```
-
----
-
-### ❌ **Invalid password or username**
-
-```json
-{
-    "message": ["Invalid username or password"],
-    "status": 400
-}
-```
-
----
-
-# ✅ **3️⃣ Refresh Token (POST)**
-
-**URL:**
-
-```
-POST /auth/refresh/
-```
-
-### **Sample Request**
-
-```json
-{
-    "refresh": "your_refresh_token_here"
-}
-```
-
-### **Response (from SimpleJWT default)**
-
-```json
-{
-    "access": "new_access_token_here"
-}
-```
-
----
-
-# ✅ **4️⃣ Get Logged-in User (GET)**
-
-**URL:**
-
-```
-GET /auth/me/
-```
-
-### **Headers**
-
-```
-Authorization: Bearer <access_token>
-```
-
-### **Success Response**
-
-```json
-{
-    "message": "User details fetched",
-    "status": 200,
-    "data": {
-        "id": 1,
-        "username": "john123",
-        "email": "john@example.com",
-        "role": "candidate",
-        "resume": "resume.pdf",
-        "created_at": "2025-02-06T12:30:00Z",
-        "updated_at": "2025-02-06T12:30:00Z"
-    }
-}
-```
-
----
-
-# ✅ **5️⃣ Logout (POST)**
-
-**URL:**
-
-```
-POST /auth/logout/
-```
-
-### **Headers**
-
-```
-Authorization: Bearer <access_token>
-```
-
-### **Sample Request**
-
-```json
-{
-    "refresh": "your_refresh_token_here"
-}
-```
-
-### **Success Response**
-
-```json
-{
-    "message": "Logged out successfully",
-    "status": 200
-}
-```
-
----
-
-### ❌ **Invalid refresh token**
-
-```json
-{
-    "message": "Invalid refresh token",
-    "status": 400
-}
-```
-
----
-
-# 🎉 Ready to Test with Postman
-
-You now have:
-✔ All request bodies
-✔ All response bodies
-✔ All success and error examples
-✔ Exact behavior based on your code
-
-If you want, I can also create:
-
-📌 A **Postman Collection JSON file** ready to import
-📌 Swagger/OpenAPI docs
-📌 cURL commands
-
-Just tell me!
+* Frontend → **Netlify**
+* Backend → **Render / AWS / Railway**
+* Database → **MongoDB Atlas**
