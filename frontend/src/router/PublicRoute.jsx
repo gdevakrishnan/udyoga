@@ -1,21 +1,17 @@
 import React, { useContext } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-// import AppContext from "../context/AppContext";
-// import { isAuthenticated } from "../serviceWorkers/authServices";
+import AppContext from "../context/AppContext";
 
 const PublicRoute = () => {
-    //   const { user, isAuthChecked } = useContext(AppContext);
+  const { isAuthenticated, isLoading } = useContext(AppContext);
 
-    // Wait for auth check to finish before deciding
-    //   if (!isAuthChecked) return null;
+  if (isLoading) return null;
 
-    // If user is logged in → redirect to home (or dashboard)
-    //   if (user || isAuthenticated()) {
-    // return <Navigate to="/" replace />;
-    //   }
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
 
-    // Otherwise render the public route (login/register)
-    return <Outlet />;
+  return <Outlet />;
 };
 
 export default PublicRoute;

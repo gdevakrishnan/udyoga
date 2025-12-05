@@ -5,8 +5,8 @@ import Register from "../pages/auth/Register";
 import Login from "../pages/auth/Login";
 import PublicRoute from "./PublicRoute";
 import PrivateRoute from "./PrivateRoute";
-import RecruiterRoutes from "./routes/RecruiterRoutes"
-import CandidateRoutes from "./routes/CandidateRoutes"
+import RecruiterRoutes from "./routes/RecruiterRoutes";
+import CandidateRoutes from "./routes/CandidateRoutes";
 
 const router = createBrowserRouter([
   {
@@ -14,14 +14,20 @@ const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { index: true, element: <Home /> },
-      
-      // Private Routes
+
+      // Private Routes for Candidate
       {
-        element: <PrivateRoute />,
-        children: [...CandidateRoutes, ...RecruiterRoutes],
+        element: <PrivateRoute allowedRoles={["candidate"]} />,
+        children: [...CandidateRoutes],
       },
 
-      // Public Routes
+      // Private Routes for Recruiter
+      {
+        element: <PrivateRoute allowedRoles={["recruiter"]} />,
+        children: [...RecruiterRoutes],
+      },
+
+      // Public Routes (register/login)
       {
         element: <PublicRoute />,
         children: [

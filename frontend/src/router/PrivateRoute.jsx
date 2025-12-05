@@ -1,21 +1,22 @@
 import React, { useContext } from "react";
-import { Navigate, Outlet } from "react-router-dom";
-// import AppContext from "../context/AppContext";
-// import { isAuthenticated } from "../serviceWorkers/authServices";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import AppContext from "../context/AppContext";
 
-const PrivateRoute = () => {
-    //   const { user, isAuthChecked } = useContext(AppContext);
+const PrivateRoute = ({ allowedRoles }) => {
+  const { user, isAuthenticated, isLoading } = useContext(AppContext);
+  const location = useLocation();
 
-    // Wait until authentication check completes
-    //   if (!isAuthChecked) return null;
+  if (isLoading) return null;
 
-    // If user is not logged in → redirect to login
-    //   if (!user && !isAuthenticated()) {
-    //     return <Navigate to="/login" replace />;
-    //   }
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
 
-    // Otherwise, render the protected route
-    return <Outlet />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
 };
 
 export default PrivateRoute;
