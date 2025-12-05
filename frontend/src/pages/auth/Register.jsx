@@ -22,7 +22,6 @@ const Register = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
-    // Clear error for this field when user starts typing
     if (errors[e.target.name]) {
       setErrors({
         ...errors,
@@ -35,7 +34,7 @@ const Register = () => {
     const file = e.target.files[0];
     if (file) {
       // Validate file type
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      const allowedTypes = ['application/pdf', 'application/msword'];
       if (!allowedTypes.includes(file.type)) {
         setErrors({
           ...errors,

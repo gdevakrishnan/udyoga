@@ -9,7 +9,6 @@ const Navbar = () => {
     { to: "/", label: "Home", icon: <Home size={20} /> },
     { to: "/recruiter", label: "Recruiter", icon: <Home size={20} /> },
     { to: "/candidate", label: "Candidate", icon: <Home size={20} /> },
-    { to: "/register", label: "Register", icon: <Home size={20} /> },
     { to: "/login", label: "Login", icon: <Home size={20} /> },
   ];
 
@@ -118,4 +117,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-    
