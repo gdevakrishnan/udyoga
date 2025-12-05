@@ -34,7 +34,7 @@ const Register = () => {
     const file = e.target.files[0];
     if (file) {
       // Validate file type
-      const allowedTypes = ['application/pdf', 'application/msword'];
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
       if (!allowedTypes.includes(file.type)) {
         setErrors({
           ...errors,
@@ -77,8 +77,6 @@ const Register = () => {
       newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
-    } else if (formData.email.length > 200) {
-      newErrors.email = 'Email must not exceed 200 characters';
     }
 
     // Password validation
