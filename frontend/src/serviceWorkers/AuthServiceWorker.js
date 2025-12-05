@@ -30,8 +30,8 @@ export const loginUser = async (payload) => {
     });
 
     // Save tokens
-    localStorage.setItem("udhyoga-access-token", response.data.access);
-    localStorage.setItem("udhyoga-refresh-token", response.data.refresh);
+    localStorage.setItem("udhyoga_access_token", response.data.access);
+    localStorage.setItem("udhyoga_refresh_token", response.data.refresh);
 
     return response;
   } catch (err) {
@@ -44,12 +44,12 @@ export const loginUser = async (payload) => {
 // ---------------------------
 export const logoutUser = async () => {
   try {
-    const refresh = localStorage.getItem("refresh");
+    const refresh = localStorage.getItem("udhyoga_refresh_token");
 
     await axios.post(`${BASE_URL}auth/logout/`, { refresh });
 
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
+    localStorage.removeItem("udhyoga_access_token");
+    localStorage.removeItem("udhyoga_refresh_token");
 
     return { message: "Logged out successfully" };
   } catch (err) {
@@ -62,7 +62,7 @@ export const logoutUser = async () => {
 // ---------------------------
 export const getUserDetails = async () => {
   try {
-    const access = localStorage.getItem("access");
+    const access = localStorage.getItem("udhyoga_access_token");
 
     const res = await axios.get(`${BASE_URL}auth/me/`, {
       headers: {
@@ -81,13 +81,13 @@ export const getUserDetails = async () => {
 // ---------------------------
 export const refreshAccessToken = async () => {
   try {
-    const refresh = localStorage.getItem("refresh");
+    const refresh = localStorage.getItem("udhyoga_refresh_token");
 
     const res = await axios.post(`${BASE_URL}auth/refresh/`, {
       refresh: refresh,
     });
 
-    localStorage.setItem("access", res.data.access);
+    localStorage.setItem("udhyoga_access_token", res.data.access);
 
     return res.data;
   } catch (err) {

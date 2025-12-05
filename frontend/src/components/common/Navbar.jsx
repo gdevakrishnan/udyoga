@@ -1,19 +1,40 @@
-import React, { useState, Fragment } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, Fragment, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Home } from "lucide-react";
+import AppContext from "../../context/AppContext";
 
 const Navbar = () => {
+  const { isAuthenticated, user, logout } = useContext(AppContext);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const links = [
+  const allLinks = [
     { to: "/", label: "Home", icon: <Home size={20} /> },
     { to: "/recruiter", label: "Recruiter", icon: <Home size={20} /> },
     { to: "/candidate", label: "Candidate", icon: <Home size={20} /> },
     { to: "/login", label: "Login", icon: <Home size={20} /> },
   ];
 
+  // Filter links based on authentication
+  const links = isAuthenticated
+    ? allLinks.filter(
+        (link) =>
+          link.label === "Home" ||
+          (link.label === "Recruiter" && user.role == "recruiter") ||
+          (link.label === "Candidate" && user.role == "candidate")
+      )
+    : allLinks.filter(
+        (link) => link.label === "Home" || link.label === "Login"
+      );
+
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    logout();
+    navigate('/');
+  }
 
   return (
     <Fragment>
@@ -39,6 +60,15 @@ const Navbar = () => {
                 {link.label}
               </Link>
             ))}
+
+            {isAuthenticated && (
+              <button
+                onClick={(e) => handleLogout(e)}
+                className="bg-emerald-600 text-white hover:bg-emerald-500 px-4 py-2 rounded-lg transition-colors font-medium"
+              >
+                Logout
+              </button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -106,9 +136,18 @@ const Navbar = () => {
 
           {/* Sidebar Footer */}
           <div className="p-4 border-t border-gray-200">
-            <button className="w-full bg-emerald-600 text-white hover:bg-emerald-500 px-4 py-3 rounded-lg transition-colors font-medium">
-              Sign In to Continue
-            </button>
+            {isAuthenticated ? (
+              <button
+                onClick={(e) => handleLogout(e)}
+                className="w-full bg-emerald-600 text-white hover:bg-emerald-500 px-4 py-3 rounded-lg transition-colors font-medium"
+              >
+                Logout
+              </button>
+            ) : (
+              <button className="w-full bg-emerald-600 text-white hover:bg-emerald-500 px-4 py-3 rounded-lg transition-colors font-medium">
+                Sign In to Continue
+              </button>
+            )}
           </div>
         </div>
       </div>

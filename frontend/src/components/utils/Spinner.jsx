@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-const Spinner = ({ size = 'md', color = '#ffffff' }) => {
+const Spinner = ({ size = "md", color = "#ffffff" }) => {
   // Size mapping
   const sizeMap = {
     xs: 20,
@@ -14,15 +14,15 @@ const Spinner = ({ size = 'md', color = '#ffffff' }) => {
 
   const spinnerStyle = {
     width: `${spinnerSize}px`,
-    padding: `${spinnerSize * 0.16}px`,
-    aspectRatio: '1',
-    borderRadius: '50%',
-    background: color,
-    WebkitMask: `conic-gradient(#0000 10%, #000), linear-gradient(#000 0 0) content-box`,
-    mask: `conic-gradient(#0000 10%, #000), linear-gradient(#000 0 0) content-box`,
-    WebkitMaskComposite: 'source-out',
-    maskComposite: 'subtract',
-    animation: 'spin 1s infinite linear',
+    aspectRatio: "1",
+    borderRadius: "50%",
+    background: `
+      radial-gradient(farthest-side, ${color} 94%, #0000) top/8px 8px no-repeat,
+      conic-gradient(#0000 30%, ${color})
+    `,
+    WebkitMask: "radial-gradient(farthest-side,#0000 calc(100% - 8px),#000 0)",
+    mask: "radial-gradient(farthest-side,#0000 calc(100% - 8px),#000 0)",
+    animation: "spin 1s infinite linear",
   };
 
   return (
@@ -30,9 +30,7 @@ const Spinner = ({ size = 'md', color = '#ffffff' }) => {
       <style>
         {`
           @keyframes spin {
-            to {
-              transform: rotate(1turn);
-            }
+            100% { transform: rotate(1turn); }
           }
         `}
       </style>

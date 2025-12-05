@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Briefcase, Lock, Eye, EyeOff, ArrowRight, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../../serviceWorkers/AuthServiceWorker";
 import Spinner from "../../components/utils/Spinner";
+import AppContext from "../../context/AppContext";
 
 const Login = () => {
+  const { setUser, setIsAuthenticated } = useContext(AppContext);
+
   const [showPassword, setShowPassword] = useState(false);
   const initialState = {
     username: "",
@@ -60,12 +63,21 @@ const Login = () => {
         await loginUser(formData)
           .then((response) => {
             if (response.status == 201 || response.status == 200) {
+              if (response?.data?.user) {
+                setUser(response?.data?.user);
+                setIsAuthenticated(true);
+              }
               alert(
                 response?.data?.message
                   ? response?.data?.message
                   : "Login successfully"
               );
-              navigate("/recruiter");
+
+              if (response?.data?.user?.role) {
+                navigate(`/${response?.data?.user?.role}`);
+              } else {
+                navigate("/");
+              }
               setFormData(initialState);
             }
           })
