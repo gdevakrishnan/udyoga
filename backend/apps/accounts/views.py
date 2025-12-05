@@ -10,6 +10,13 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
 
+from io import BytesIO
+
+from .utils.supabase import upload_file, validate_resume_file
+import uuid
+import os
+
+
 
 # Server status
 @api_view(["GET"])
@@ -33,34 +40,81 @@ def server_status(request):
 
 ###########################################
 # Authentication
-
 @api_view(["POST"])
 def register(request):
     try:
-        serializer = RegisterSerializer(data=request.data)
+        resume = request.FILES.get('resume')
+        role = request.data.get('role')
+        
+        # Validate resume file if provided
+        if resume:
+            is_valid, error_message = validate_resume_file(resume)
+            if not is_valid:
+                return Response(
+                    {"message": error_message, "status": 400},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        # Check if candidate role requires resume
+        if role == "candidate" and not resume:
+            return Response(
+                {"message": "Resume is required for candidate role", "status": 400},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Validate serializer
+        serializer = RegisterSerializer(data=request.data, context={"resume": resume})
 
         if serializer.is_valid():
-            serializer.save()
+            user = serializer.save()
+
+            # Upload resume if provided
+            if resume:
+                # Generate unique filename to avoid conflicts
+                file_extension = os.path.splitext(resume.name)[1]
+                unique_filename = f"{user.username}_{uuid.uuid4().hex}{file_extension}"
+                file_path = f"{user.username}/{unique_filename}"
+                
+                resume_url = upload_file(resume, file_path)
+                
+                if resume_url:
+                    user.resume = resume_url
+                    user.save()
+                else:
+                    # Delete user if resume upload fails
+                    user.delete()
+                    return Response(
+                        {"message": "Failed to upload resume. Please try again.", "status": 500},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
+
             return Response(
-                {"message": "User registered successfully", "status": 201},
+                {
+                    "message": "User registered successfully",
+                    "status": 201,
+                    "user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                        "role": user.role
+                    }
+                },
                 status=status.HTTP_201_CREATED
             )
 
-        return Response(
-            {"message": serializer.errors, "status": 400},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    except ValidationError as e:
-        return Response(
-            {"message": e.detail, "status": 400},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        else:
+            return Response(
+                {"message": serializer.errors, "status": 400},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
     except Exception as e:
+        print(f"Registration error: {str(e)}")
         return Response(
-            {"message": str(e), "status": 500},
+            {"message": "An error occurred during registration", "status": 500},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-    
+ 
 
 @api_view(["POST"])
 def login(request):

@@ -5,13 +5,12 @@ from .models import User
 from rest_framework.exceptions import ValidationError
 from django.db import IntegrityError
 
-
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, min_length=8)
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "role", "resume", "company_name", "company_description"]
+        fields = ["username", "email", "password", "role", "company_name", "company_description"]
 
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
@@ -25,17 +24,26 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         role = data.get("role")
-        resume = data.get("resume")
+        resume = self.context.get("resume")
 
-        if role == "candidate" and not resume:
-            raise serializers.ValidationError({"resume": "Resume is required for candidate role"})
+        if role == "candidate":
+            if not resume:
+                raise serializers.ValidationError({"resume": "Resume is required for candidate role"})
+        
+        if role == "recruiter":
+            if not data.get("company_name"):
+                raise serializers.ValidationError({"company_name": "Company name is required for recruiter role"})
+            if not data.get("company_description"):
+                raise serializers.ValidationError({"company_description": "Company description is required for recruiter role"})
+            
+            if resume:
+                raise serializers.ValidationError({"resume": "Recruiters cannot upload resumes"})
 
         return data
 
     def create(self, validated_data):
         validated_data["password"] = make_password(validated_data["password"])
         return User.objects.create(**validated_data)
-
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()

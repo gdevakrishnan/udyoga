@@ -9,7 +9,7 @@ class User(AbstractUser):
 
     username = models.CharField(max_length=200, unique=True)
     email = models.EmailField(max_length=200, unique=True)
-    resume = models.CharField(max_length=200, blank=True, default='')
+    resume = models.URLField(max_length=800, blank=True, default='')
     role = models.CharField(max_length=20, choices=USER_ROLES, default='candidate')
     company_name = models.CharField(max_length=200, blank=True, default='')
     company_description = models.TextField(blank=True, default='')

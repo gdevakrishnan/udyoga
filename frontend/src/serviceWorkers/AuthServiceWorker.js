@@ -7,10 +7,14 @@ const BASE_URL = "http://localhost:8000/api/v1/accounts/";
 // ---------------------------
 export const registerUser = async (payload) => {
   try {
-    const res = await axios.post(`${BASE_URL}auth/register/`, payload);
-    return res.data;
-  } catch (err) {
-    return { error: true, message: err.response?.data || "Register failed" };
+    const response = await axios.post(`${BASE_URL}auth/register/`, payload, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    console.log("User registered:", response.data);
+  } catch (error) {
+    console.error("Error registering user:", error);
   }
 };
 
