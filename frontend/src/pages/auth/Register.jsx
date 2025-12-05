@@ -11,7 +11,7 @@ import {
   Building,
   FileText,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../../serviceWorkers/AuthServiceWorker";
 import Spinner from "../../components/utils/Spinner";
 
@@ -19,7 +19,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [formData, setFormData] = useState({
+  const initialState = {
     username: "",
     email: "",
     password: "",
@@ -27,9 +27,11 @@ const Register = () => {
     role: "candidate",
     company_name: "",
     company_description: "",
-  });
+  };
+  const [formData, setFormData] = useState(initialState);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -156,8 +158,15 @@ const Register = () => {
       }
 
       try {
-        await registerUser(submitData);
-        alert("Registration successful! Check console for data.");
+        await registerUser(submitData)
+          .then(response => {
+            if (response.status == 201 || response.status == 200) {
+              alert(response?.data?.message ? response?.data?.message : "Registered successfully");
+              navigate('/login');
+              setFormData(initialState);
+            }
+          })
+          .catch(e => e.message);
       } catch (err) {
         console.error(err);
         alert("Registration failed!");
@@ -199,9 +208,10 @@ const Register = () => {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() =>
-                    setFormData({ ...formData, role: "candidate" })
-                  }
+                  onClick={() => {
+                    setFormData({ ...formData, role: "candidate" });
+                    setFormData({...initialState, role: "candidate"});
+                  }}
                   className={`py-3 px-4 rounded-lg border-2 transition ${
                     formData.role === "candidate"
                       ? "border-emerald-600 bg-emerald-50 text-emerald-700 font-semibold"
@@ -213,9 +223,10 @@ const Register = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() =>
-                    setFormData({ ...formData, role: "recruiter" })
-                  }
+                  onClick={() => {
+                    setFormData({ ...formData, role: "recruiter" });
+                    setFormData({...initialState, role: "recruiter"});
+                  }}
                   className={`py-3 px-4 rounded-lg border-2 transition ${
                     formData.role === "recruiter"
                       ? "border-emerald-600 bg-emerald-50 text-emerald-700 font-semibold"
@@ -505,6 +516,7 @@ const Register = () => {
             >
               {loading && <Spinner size={"xs"} />}
               {loading ? "Registering..." : "Create Account"}
+              {!loading && <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />}
             </button>
           </div>
         </div>

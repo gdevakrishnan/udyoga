@@ -12,9 +12,9 @@ export const registerUser = async (payload) => {
         "Content-Type": "multipart/form-data",
       },
     });
-    console.log("User registered:", response.data);
-  } catch (error) {
-    console.error("Error registering user:", error);
+    return response;
+  } catch (err) {
+    return { error: true, message: err.response?.data || "Register failed" };
   }
 };
 
@@ -23,13 +23,17 @@ export const registerUser = async (payload) => {
 // ---------------------------
 export const loginUser = async (payload) => {
   try {
-    const res = await axios.post(`${BASE_URL}auth/login/`, payload);
+    const response = await axios.post(`${BASE_URL}auth/login/`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     // Save tokens
-    localStorage.setItem("access", res.data.access);
-    localStorage.setItem("refresh", res.data.refresh);
+    localStorage.setItem("udhyoga-access-token", response.data.access);
+    localStorage.setItem("udhyoga-refresh-token", response.data.refresh);
 
-    return res.data;
+    return response;
   } catch (err) {
     return { error: true, message: err.response?.data || "Login failed" };
   }

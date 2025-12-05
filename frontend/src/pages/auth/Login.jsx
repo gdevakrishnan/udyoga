@@ -1,14 +1,19 @@
 import React, { useState } from "react";
-import { Briefcase, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Briefcase, Lock, Eye, EyeOff, ArrowRight, User } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../../serviceWorkers/AuthServiceWorker";
+import Spinner from "../../components/utils/Spinner";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
+  const initialState = {
+    username: "",
     password: "",
-  });
+  };
+  const [formData, setFormData] = useState(initialState);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -26,11 +31,11 @@ const Login = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    // Email validation
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+    // Username validation
+    if (!formData.username.trim()) {
+      newErrors.username = "Username is required";
+    } else if (formData.username.length < 3) {
+      newErrors.username = "Username must be at least 3 characters";
     }
 
     // Password validation
@@ -47,11 +52,34 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateForm()) {
-      alert("Login form submitted");
+      setLoading(true);
+
+      try {
+        await loginUser(formData)
+          .then((response) => {
+            if (response.status == 201 || response.status == 200) {
+              alert(
+                response?.data?.message
+                  ? response?.data?.message
+                  : "Login successfully"
+              );
+              navigate("/recruiter");
+              setFormData(initialState);
+            }
+          })
+          .catch((e) => {
+            console.log(e.message);
+            alert("Login Failed!");
+          });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     } else {
-      alert('Please fix the errors in the form');
+      alert("Please fix the errors in the form");
     }
   };
 
@@ -80,32 +108,32 @@ const Login = () => {
         {/* Login Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
           <div className="space-y-3">
-            {/* Email Input */}
+            {/* Username Input */}
             <div>
               <label
-                htmlFor="email"
+                htmlFor="username"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Email Address <span className="text-red-500">*</span>
+                Username <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <User className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
+                  id="username"
+                  name="username"
+                  type="text"
+                  value={formData.username}
                   onChange={handleChange}
                   className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition ${
-                    errors.email ? "border-red-500" : "border-gray-300"
+                    errors.username ? "border-red-500" : "border-gray-300"
                   }`}
-                  placeholder="you@example.com"
+                  placeholder="Enter your username"
                 />
               </div>
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              {errors.username && (
+                <p className="mt-1 text-sm text-red-600">{errors.username}</p>
               )}
             </div>
 
@@ -152,10 +180,19 @@ const Login = () => {
             {/* Submit Button */}
             <button
               onClick={handleSubmit}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 font-semibold transition"
+              disabled={loading}
+              className={`w-full flex justify-center items-center py-3 px-4 rounded-lg shadow-sm text-white font-semibold transition gap-2
+    ${
+      loading
+        ? "bg-emerald-400 cursor-not-allowed"
+        : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+    }`}
             >
-              <span>Sign In</span>
-              <ArrowRight className="ml-2 h-5 w-5" />
+              {loading && <Spinner size={"xs"} />}
+              {loading ? "Signing in..." : "Sign in"}
+              {!loading && (
+                <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
+              )}
             </button>
           </div>
         </div>
