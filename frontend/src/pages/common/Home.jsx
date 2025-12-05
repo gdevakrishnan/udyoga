@@ -67,7 +67,7 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="pt-4 pb-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-50 via-white to-emerald-50">
+      <section className="pt-4 pb-16 px-4 sm:px-6 lg:px-8 bg-linear-to-br from-emerald-50 via-white to-emerald-50">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -99,7 +99,7 @@ const Home = () => {
                     <span className="text-3xl font-bold text-emerald-600">8.5/10</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-3 rounded-full" style={{width: '85%'}}></div>
+                    <div className="bg-linear-to-r from-emerald-500 to-emerald-600 h-3 rounded-full" style={{width: '85%'}}></div>
                   </div>
                   <div className="pt-4 space-y-3">
                     <div className="flex items-start space-x-3">
@@ -153,7 +153,7 @@ const Home = () => {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="bg-gradient-to-br from-emerald-50 to-white p-6 rounded-xl border border-emerald-100 hover:shadow-lg transition">
+              <div key={index} className="bg-linear-to-br from-emerald-50 to-white p-6 rounded-xl border border-emerald-100 hover:shadow-lg transition">
                 <div className="w-12 h-12 bg-emerald-600 text-white rounded-lg flex items-center justify-center mb-4">
                   {feature.icon}
                 </div>
@@ -213,7 +213,7 @@ const Home = () => {
                 ))}
               </div>
             </div>
-            <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-8 text-white shadow-2xl">
+            <div className="bg-linear-to-br from-emerald-500 to-emerald-600 rounded-2xl p-8 text-white shadow-2xl">
               <h3 className="text-2xl font-bold mb-6">Start Your Career Journey Today</h3>
               <div className="space-y-4 mb-8">
                 <div className="flex items-center space-x-3">
@@ -244,7 +244,7 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-600 to-emerald-700">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-linear-to-br from-emerald-600 to-emerald-700">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Ready to Transform Your Career?

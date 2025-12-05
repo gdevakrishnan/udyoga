@@ -8,24 +8,31 @@ const Navbar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
-  const allLinks = [
-    { to: "/", label: "Home", icon: <Home size={20} /> },
-    { to: "/recruiter", label: "Recruiter", icon: <Home size={20} /> },
-    { to: "/candidate", label: "Candidate", icon: <Home size={20} /> },
-    { to: "/login", label: "Login", icon: <Home size={20} /> },
-  ];
+const profileLink = isAuthenticated
+  ? user?.role === "candidate"
+    ? "/c/profile"
+    : "/r/profile"
+  : "/login";
 
-  // Filter links based on authentication
-  const links = isAuthenticated
-    ? allLinks.filter(
-        (link) =>
-          link.label === "Home" ||
-          (link.label === "Recruiter" && user.role == "recruiter") ||
-          (link.label === "Candidate" && user.role == "candidate")
-      )
-    : allLinks.filter(
-        (link) => link.label === "Home" || link.label === "Login"
-      );
+const allLinks = [
+  { to: "/", label: "Home", icon: <Home size={20} /> },
+  { to: "/recruiter", label: "Recruiter", icon: <Home size={20} /> },
+  { to: "/candidate", label: "Candidate", icon: <Home size={20} /> },
+  { to: "/analyze", label: "Analyze", icon: <Home size={20} /> },
+  { to: "/login", label: "Login", icon: <Home size={20} /> },
+  { to: profileLink, label: "Profile", icon: <Home size={20} /> },
+];
+
+const links = isAuthenticated
+  ? allLinks.filter((link) => {
+      if (link.label === "Home") return true;
+      if (link.label === "Profile") return true;
+      if (link.label === "Recruiter" && user.role === "recruiter") return true;
+      if (link.label === "Analyze" && user.role === "candidate") return true;
+      if (link.label === "Candidate" && user.role === "candidate") return true;
+      return false;
+    })
+  : allLinks.filter((link) => link.label === "Home" || link.label === "Login");
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);

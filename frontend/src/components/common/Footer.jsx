@@ -12,7 +12,7 @@ const Footer = () => {
                 <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
                   <Briefcase className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold text-white">Udyoga</span>
+                <span className="text-xl font-bold text-white">Udhyoga</span>
               </div>
               <p className="text-sm">
                 AI-powered career assistant for college students
@@ -80,7 +80,7 @@ const Footer = () => {
             </div>
           </div>
           <div className="border-t border-gray-800 pt-8 text-center text-sm">
-            <p>&copy; 2024 Udyoga. All rights reserved.</p>
+            <p>&copy; 2024 Udhyoga. All rights reserved.</p>
           </div>
         </div>
       </footer>
