@@ -2,7 +2,10 @@
 import React, { useState } from "react";
 import { MessageSquare, Send } from "lucide-react";
 
-const QueryChat = () => {
+const QueryChat = ({data, token}) => {
+  console.log(data);
+  console.log(token);
+
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -33,7 +36,7 @@ const QueryChat = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl h-[600px] flex flex-col border">
+    <div className="bg-white rounded-2xl shadow-xl h-[600px] flex flex-col border overflow-hidden">
       {/* Header */}
       <div className="bg-emerald-600 p-4 text-white flex items-center">
         <MessageSquare className="w-6 h-6 mr-2" />

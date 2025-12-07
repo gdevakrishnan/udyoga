@@ -14,7 +14,7 @@ const SubmitForm = ({ user, onSubmit, token }) => {
     resumeSource: "default",
     resumeText: "",
     jdSource: "url",
-    jdUrl: user?.resume,
+    jdUrl: "",
     jdText: "",
   });
 

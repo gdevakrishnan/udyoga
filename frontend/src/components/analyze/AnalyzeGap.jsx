@@ -1,8 +1,11 @@
 // components/AnalyzeGap.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { CheckCircle, Sparkles, MessageSquare, ArrowRight } from "lucide-react";
 
-const AnalyzeGap = ({ onStartQuery }) => {
+const AnalyzeGap = ({ onStartQuery, data, token }) => {
+  console.log(data);
+  console.log(token);
+
   return (
     <div className="bg-white p-8 rounded-2xl shadow-xl border">
       <div className="text-center mb-8">
