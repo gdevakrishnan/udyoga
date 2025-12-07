@@ -55,10 +55,7 @@ class ScrapeAPIView(APIView):
 
 
 class GetEmbeddingsView(APIView):
-    """
-    Accepts resume URL + JD text, extracts resume text (PDF + OCR if needed),
-    generates embeddings using Hugging Face model, and returns results.
-    """
+    permission_classes = [IsCandidate]
 
     def post(self, request):
         serializer = ResumeJDSerializer(data=request.data)
