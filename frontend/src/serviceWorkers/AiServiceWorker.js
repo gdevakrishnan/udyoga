@@ -18,3 +18,21 @@ export const scrapeJobDescData = async (payload, token) => {
     return { error: true, message: err.response?.data || "Register failed" };
   }
 };
+
+
+// ---------------------------
+// Get Embedding of JD and Resume
+// ---------------------------
+export const getEmbeddingsResumeJd = async (payload, token) => {
+  try {
+    const response = await axios.post(`${BASE_URL}get-embeddings/`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+    });
+    return response;
+  } catch (err) {
+    return { error: true, message: err.response?.data || "Register failed" };
+  }
+};

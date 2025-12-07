@@ -261,7 +261,7 @@ class GetEmbeddingsView(APIView):
 
             return Response({
                 "status": "success",
-                "message": "Embeddings generated successfully",
+                "message": "Resume and JD analyzed successfully",
                 "data": response_serializer.data
             }, status=status.HTTP_200_OK)
 

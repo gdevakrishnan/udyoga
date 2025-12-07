@@ -20,7 +20,7 @@ const Analyze = () => {
     }
   }, [user]);
 
-  const handleSubmit = (data) => {
+  const handleSubmit = async (data) => {
     setSubmittedData(data);
     setCurrentStep("analyze");
   };

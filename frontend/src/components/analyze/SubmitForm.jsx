@@ -2,7 +2,10 @@
 import React, { useState } from "react";
 import { FileText, Link2, ArrowRight } from "lucide-react";
 import Spinner from "../utils/Spinner";
-import { scrapeJobDescData } from "../../serviceWorkers/AiServiceWorker";
+import {
+  getEmbeddingsResumeJd,
+  scrapeJobDescData,
+} from "../../serviceWorkers/AiServiceWorker";
 
 const SubmitForm = ({ user, onSubmit, token }) => {
   const [formData, setFormData] = useState({
@@ -15,6 +18,7 @@ const SubmitForm = ({ user, onSubmit, token }) => {
 
   const [errors, setErrors] = useState({});
   const [fetching, setFetching] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // -------------------------
   // Detect Browser
@@ -50,7 +54,8 @@ const SubmitForm = ({ user, onSubmit, token }) => {
 
     // Resume
     if (formData.resumeSource === "custom") {
-      if (!formData.customResumeUrl.trim()) err.customResumeUrl = "URL required";
+      if (!formData.customResumeUrl.trim())
+        err.customResumeUrl = "URL required";
       else if (!isValidUrl(formData.customResumeUrl))
         err.customResumeUrl = "Invalid URL";
     }
@@ -111,22 +116,30 @@ const SubmitForm = ({ user, onSubmit, token }) => {
   const handleSubmit = async () => {
     if (!validate()) return;
 
+    setSubmitting(true);
+
     const resume_url =
       formData.resumeSource === "default"
         ? user?.resume
         : formData.customResumeUrl;
 
-    const jd_text =
-      formData.jdSource === "text"
-        ? formData.jdText
-        : ""; 
+    const jd_text = formData.jdSource === "text" ? formData.jdText : "";
 
-    console.log({ resume_url, jd_text });
+    try {
+      const response = await getEmbeddingsResumeJd(
+        { resume_url, jd_text },
+        token
+      );
 
-    onSubmit({
-      resume_url,
-      jd_text,
-    });
+      if (response.status === 200 || response.status === 201) {
+        alert(response?.data?.message || "Analyzed successfully");
+        onSubmit(response?.data?.data);
+      }
+    } catch (e) {
+      console.log(e.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -152,7 +165,12 @@ const SubmitForm = ({ user, onSubmit, token }) => {
               />
               <div className="ml-3 flex items-center">
                 <FileText className="w-5 h-5 mr-2 text-emerald-600" />
-                Use {user?.username ? (user?.username.charAt(0).toUpperCase() + user?.username.slice(1)) : "default"} Resume
+                Use{" "}
+                {user?.username
+                  ? user?.username.charAt(0).toUpperCase() +
+                    user?.username.slice(1)
+                  : "default"}{" "}
+                Resume
               </div>
             </label>
 
@@ -250,7 +268,10 @@ const SubmitForm = ({ user, onSubmit, token }) => {
 
                 <button
                   onClick={handleFetch}
-                  className="bg-emerald-600 text-white px-6 rounded-lg flex items-center"
+                  disabled={fetching}
+                  className={`bg-emerald-600 text-white px-6 rounded-lg flex items-center
+    ${fetching ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}
+  `}
                 >
                   {fetching ? <Spinner size="sm" /> : "Fetch"}
                 </button>
@@ -283,9 +304,22 @@ const SubmitForm = ({ user, onSubmit, token }) => {
         {/* Submit Button */}
         <button
           onClick={handleSubmit}
-          className="w-full bg-emerald-600 text-white p-3 rounded-lg font-semibold flex justify-center items-center gap-2"
+          disabled={submitting}
+          className={`w-full bg-emerald-600 text-white p-3 rounded-lg font-semibold 
+    flex justify-center items-center gap-2 
+    ${submitting ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}`}
         >
-          Analyze Resume <ArrowRight className="w-5 h-5" />
+          {submitting ? (
+            <>
+              <Spinner size="sm" />
+              Analyzing...
+            </>
+          ) : (
+            <>
+              Analyze Resume
+              <ArrowRight className="w-5 h-5" />
+            </>
+          )}
         </button>
       </div>
     </div>
