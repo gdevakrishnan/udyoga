@@ -19,7 +19,7 @@ const Timeline = ({ currentStep }) => {
               <div
                 className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
                   currentStep === step.key
-                    ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg scale-110'
+                    ? 'bg-linear-to-br from-emerald-500 to-emerald-600 text-white shadow-lg scale-110'
                     : steps.findIndex(s => s.key === currentStep) > index
                     ? 'bg-emerald-500 text-white'
                     : 'bg-gray-200 text-gray-400'
@@ -256,7 +256,7 @@ const SubmitForm = ({ user, onSubmit }) => {
                       alert('Please enter a valid URL first');
                     }
                   }}
-                  className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg font-semibold hover:from-emerald-600 hover:to-emerald-700 transition whitespace-nowrap"
+                  className="px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 text-white rounded-lg font-semibold hover:from-emerald-600 hover:to-emerald-700 transition whitespace-nowrap"
                 >
                   Fetch
                 </button>
@@ -288,7 +288,7 @@ const SubmitForm = ({ user, onSubmit }) => {
         {/* Submit Button */}
         <button
           onClick={handleSubmit}
-          className="w-full flex justify-center items-center py-3 px-4 rounded-lg shadow-sm text-white font-semibold transition gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+          className="w-full flex justify-center items-center py-3 px-4 rounded-lg shadow-sm text-white font-semibold transition gap-2 bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
         >
           Analyze Resume
           <ArrowRight className="w-5 h-5" />
@@ -303,7 +303,7 @@ const AnalyzeGap = ({ onStartQuery }) => {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-2xl mb-4">
           <Sparkles className="w-8 h-8 text-white" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Analysis Complete</h2>
@@ -344,7 +344,7 @@ const AnalyzeGap = ({ onStartQuery }) => {
 
       <button
         onClick={onStartQuery}
-        className="w-full flex justify-center items-center py-3 px-4 rounded-lg shadow-sm text-white font-semibold transition gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+        className="w-full flex justify-center items-center py-3 px-4 rounded-lg shadow-sm text-white font-semibold transition gap-2 bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
       >
         Start Query Session
         <ArrowRight className="w-5 h-5" />
@@ -395,7 +395,7 @@ const QueryChat = () => {
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-      <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-4">
+      <div className="bg-linear-to-r from-emerald-500 to-emerald-600 p-4">
         <h2 className="text-xl font-semibold text-white flex items-center">
           <MessageSquare className="w-6 h-6 mr-2" />
           Query Assistant
@@ -411,7 +411,7 @@ const QueryChat = () => {
             <div
               className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
                 message.type === 'user'
-                  ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white'
+                  ? 'bg-linear-to-r from-emerald-500 to-emerald-600 text-white'
                   : 'bg-gray-100 text-gray-800'
               }`}
             >
@@ -436,7 +436,7 @@ const QueryChat = () => {
             disabled={!input.trim()}
             className={`px-6 py-3 rounded-lg font-semibold transition flex items-center gap-2 ${
               input.trim()
-                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700'
+                ? 'bg-linear-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
           >
@@ -465,7 +465,7 @@ const Analyze = () => {
 
   return (
     <Fragment>
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-linear-to-br from-emerald-50 via-white to-emerald-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="absolute top-0 left-0 w-64 h-64 bg-emerald-200 rounded-full blur-3xl opacity-20"></div>
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-300 rounded-full blur-3xl opacity-20"></div>
 

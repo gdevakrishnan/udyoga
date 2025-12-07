@@ -96,7 +96,7 @@ const Login = () => {
   };
 
   return (
-    <div className="py-12 min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="py-12 min-h-screen bg-linear-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
       {/* Background Decorations */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-emerald-200 rounded-full blur-3xl opacity-20"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-300 rounded-full blur-3xl opacity-20"></div>
@@ -105,7 +105,7 @@ const Login = () => {
         {/* Logo and Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-16 h-16 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
               <Briefcase className="w-9 h-9 text-white" />
             </div>
           </div>
@@ -197,7 +197,7 @@ const Login = () => {
     ${
       loading
         ? "bg-emerald-400 cursor-not-allowed"
-        : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+        : "bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
     }`}
             >
               {loading && <Spinner size={"xs"} />}
