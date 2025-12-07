@@ -1,24 +1,28 @@
 // components/SubmitForm.jsx
 import React, { useState } from "react";
-import { FileText, Link2, ArrowRight } from "lucide-react";
+import { FileText, Link2, ArrowRight, Upload, Check } from "lucide-react";
 import Spinner from "../utils/Spinner";
 import {
   getEmbeddingsResumeJd,
   scrapeJobDescData,
 } from "../../serviceWorkers/AiServiceWorker";
 
+import { parseResumeFile } from "../../utils/fileParser";
+
 const SubmitForm = ({ user, onSubmit, token }) => {
   const [formData, setFormData] = useState({
     resumeSource: "default",
-    customResumeUrl: "",
+    resumeText: "",
     jdSource: "url",
-    jdUrl: "",
+    jdUrl: user?.resume,
     jdText: "",
   });
 
   const [errors, setErrors] = useState({});
   const [fetching, setFetching] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [parsing, setParsing] = useState(false);
+  const [parsedSuccess, setParsedSuccess] = useState(false);
 
   // -------------------------
   // Detect Browser
@@ -38,7 +42,41 @@ const SubmitForm = ({ user, onSubmit, token }) => {
   }
 
   // -------------------------
-  // Validation Helpers
+  // Resume File Upload → Parse via utils
+  // -------------------------
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setParsedSuccess(false);
+    setParsing(true);
+
+    try {
+      const result = await parseResumeFile(file);
+
+      if (!result.success) {
+        alert(result.error || "Failed to parse resume");
+        setParsing(false);
+        return;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        resumeSource: "custom",
+        resumeText: result.text,
+      }));
+
+      setParsedSuccess(true);
+      alert("Resume file parsed");
+    } catch (error) {
+      alert(error.message || "Failed to parse resume file");
+    } finally {
+      setParsing(false);
+    }
+  };
+
+  // -------------------------
+  // Validation
   // -------------------------
   const isValidUrl = (url) => {
     try {
@@ -52,15 +90,10 @@ const SubmitForm = ({ user, onSubmit, token }) => {
   const validate = () => {
     const err = {};
 
-    // Resume
-    if (formData.resumeSource === "custom") {
-      if (!formData.customResumeUrl.trim())
-        err.customResumeUrl = "URL required";
-      else if (!isValidUrl(formData.customResumeUrl))
-        err.customResumeUrl = "Invalid URL";
+    if (formData.resumeSource === "custom" && !formData.resumeText.trim()) {
+      err.resumeText = "Resume file must contain readable text";
     }
 
-    // JD
     if (formData.jdSource === "url") {
       if (!formData.jdUrl.trim()) err.jdUrl = "URL required";
       else if (!isValidUrl(formData.jdUrl)) err.jdUrl = "Invalid URL";
@@ -80,19 +113,14 @@ const SubmitForm = ({ user, onSubmit, token }) => {
   const handleFetch = async () => {
     if (!token) return alert("Login required");
     if (!formData.jdUrl.trim() || !isValidUrl(formData.jdUrl))
-      return alert("Enter valid JD URL");
+      return alert("Enter valid URL");
 
     try {
       setFetching(true);
-
       const browser = await detectBrowser();
-      const payload = { ...formData, browser };
 
-      const response = await scrapeJobDescData(payload, token);
+      const response = await scrapeJobDescData({ ...formData, browser }, token);
 
-      console.log("SCRAPER RESPONSE:", response);
-
-      // Auto-fill text if response was successful
       if (response?.data?.data?.text) {
         setFormData((prev) => ({
           ...prev,
@@ -100,43 +128,56 @@ const SubmitForm = ({ user, onSubmit, token }) => {
           jdSource: "text",
         }));
 
-        alert("Job Description fetched successfully!");
+        alert("Job description fetched successfully");
       }
     } catch (e) {
-      console.log("Fetch error:", e.message);
-      alert("Failed to fetch JD!");
+      alert("Failed to fetch JD");
     } finally {
       setFetching(false);
     }
   };
 
   // -------------------------
-  // Submit → prepare backend format
+  // Submit Form → Backend
   // -------------------------
+
   const handleSubmit = async () => {
     if (!validate()) return;
 
     setSubmitting(true);
 
-    const resume_url =
-      formData.resumeSource === "default"
-        ? user?.resume
-        : formData.customResumeUrl;
+    // Determine resume type
+    const resumeType =
+      formData.resumeSource === "default" ? "default" : "custom";
 
+    // Resume text (default → from user.resume.text)
+    const resume_text =
+      resumeType === "custom" ? formData.resumeText || "" : ""; 
+
+    // Resume URL (default → from user.resume.url)
+    const resume_url =
+      resumeType === "default" ? user?.resume || "" : "";
+
+    // JD Text
     const jd_text = formData.jdSource === "text" ? formData.jdText : "";
 
+    // Final Payload
+    const payload = {
+      type: resumeType,
+      resume_url,
+      resume_text,
+      jd_text,
+    };
+
     try {
-      const response = await getEmbeddingsResumeJd(
-        { resume_url, jd_text },
-        token
-      );
+      const response = await getEmbeddingsResumeJd(payload, token);
 
       if (response.status === 200 || response.status === 201) {
         alert(response?.data?.message || "Analyzed successfully");
         onSubmit(response?.data?.data);
       }
     } catch (e) {
-      console.log(e.message);
+      console.log("Submission Error:", e.message);
     } finally {
       setSubmitting(false);
     }
@@ -166,15 +207,13 @@ const SubmitForm = ({ user, onSubmit, token }) => {
               <div className="ml-3 flex items-center">
                 <FileText className="w-5 h-5 mr-2 text-emerald-600" />
                 Use{" "}
-                {user?.username
-                  ? user?.username.charAt(0).toUpperCase() +
-                    user?.username.slice(1)
-                  : "default"}{" "}
-                Resume
+                {user?.username.charAt(0).toUpperCase() +
+                  user?.username.slice(1)}{" "}
+                Resume (Default)
               </div>
             </label>
 
-            {/* Custom Resume URL */}
+            {/* Custom File Upload */}
             <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-emerald-50">
               <input
                 type="radio"
@@ -186,28 +225,36 @@ const SubmitForm = ({ user, onSubmit, token }) => {
                 }
               />
               <div className="ml-3 flex items-center">
-                <Link2 className="w-5 h-5 mr-2 text-emerald-600" />
-                Custom Resume URL
+                <Upload className="w-5 h-5 mr-2 text-emerald-600" />
+                Upload Resume File (.pdf / .doc / .docx)
               </div>
             </label>
 
             {formData.resumeSource === "custom" && (
-              <input
-                type="url"
-                className="w-full p-3 border rounded-lg mt-2"
-                placeholder="https://example.com/resume.pdf"
-                value={formData.customResumeUrl}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    customResumeUrl: e.target.value,
-                  })
-                }
-              />
-            )}
+              <>
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    className="w-full p-3 border rounded-lg"
+                    onChange={handleResumeUpload}
+                  />
 
-            {errors.customResumeUrl && (
-              <p className="text-red-600 text-sm">{errors.customResumeUrl}</p>
+                  {parsedSuccess && (
+                    <Check className="text-emerald-600 w-6 h-6" />
+                  )}
+                </div>
+
+                {parsing && (
+                  <p className="text-emerald-600 text-sm mt-1">
+                    Parsing resume...
+                  </p>
+                )}
+
+                {errors.resumeText && (
+                  <p className="text-red-600 text-sm">{errors.resumeText}</p>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -236,7 +283,7 @@ const SubmitForm = ({ user, onSubmit, token }) => {
               </div>
             </label>
 
-            {/* Paste JD */}
+            {/* JD Text */}
             <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-emerald-50">
               <input
                 type="radio"
@@ -270,8 +317,7 @@ const SubmitForm = ({ user, onSubmit, token }) => {
                   onClick={handleFetch}
                   disabled={fetching}
                   className={`bg-emerald-600 text-white px-6 rounded-lg flex items-center
-    ${fetching ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}
-  `}
+                    ${fetching ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   {fetching ? <Spinner size="sm" /> : "Fetch"}
                 </button>
@@ -282,7 +328,7 @@ const SubmitForm = ({ user, onSubmit, token }) => {
               <p className="text-red-600 text-sm">{errors.jdUrl}</p>
             )}
 
-            {/* JD Textarea */}
+            {/* JD Text */}
             {formData.jdSource === "text" && (
               <textarea
                 rows={6}
@@ -301,13 +347,13 @@ const SubmitForm = ({ user, onSubmit, token }) => {
           </div>
         </div>
 
-        {/* Submit Button */}
+        {/* Submit */}
         <button
           onClick={handleSubmit}
           disabled={submitting}
           className={`w-full bg-emerald-600 text-white p-3 rounded-lg font-semibold 
-    flex justify-center items-center gap-2 
-    ${submitting ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}`}
+            flex justify-center items-center gap-2 
+            ${submitting ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           {submitting ? (
             <>

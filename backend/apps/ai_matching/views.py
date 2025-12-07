@@ -222,51 +222,77 @@ class GetEmbeddingsView(APIView):
         serializer = ResumeJDSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        resume_url = serializer.validated_data['resume_url']
-        jd_text = serializer.validated_data['jd_text']
+        resume_type = serializer.validated_data["type"]
+        resume_url = serializer.validated_data.get("resume_url")
+        resume_text_input = serializer.validated_data.get("resume_text", "")
+        jd_text = serializer.validated_data["jd_text"]
 
         try:
-            pdf_response = requests.get(resume_url, timeout=10)
-            pdf_response.raise_for_status()
-            pdf_bytes = io.BytesIO(pdf_response.content)
+            # ===============================
+            # CASE 1 → CUSTOM RESUME
+            # ===============================
+            if resume_type == "custom":
+                resume_text = resume_text_input.strip()
+                if not resume_text:
+                    raise ValueError("Custom resume_text cannot be empty.")
 
-            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-            resume_text = ""
+            # ===============================
+            # CASE 2 → DEFAULT RESUME (PDF URL)
+            # ===============================
+            else:  # resume_type == "default"
+                if not resume_url:
+                    raise ValueError("resume_url missing for default type.")
 
-            for page in doc:
-                text = page.get_text()
+                pdf_response = requests.get(resume_url, timeout=10)
+                pdf_response.raise_for_status()
 
-                if text.strip():
-                    resume_text += text
-                else:
-                    # OCR fallback
-                    pix = page.get_pixmap()
-                    img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-                    resume_text += pytesseract.image_to_string(img)
+                pdf_bytes = io.BytesIO(pdf_response.content)
+                doc = fitz.open(stream=pdf_bytes, filetype="pdf")
 
-            doc.close()
+                resume_text = ""
 
-            # Generate embeddings
+                for page in doc:
+                    text = page.get_text()
+
+                    if text.strip():
+                        resume_text += text
+                    else:
+                        # OCR fallback
+                        pix = page.get_pixmap()
+                        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                        resume_text += pytesseract.image_to_string(img)
+
+                doc.close()
+
+                if not resume_text.strip():
+                    raise ValueError("Unable to extract text from the provided resume PDF.")
+
+            # ===============================
+            # Generate Embeddings
+            # ===============================
             resume_embedding = client.feature_extraction([resume_text])[0]
             jd_embedding = client.feature_extraction([jd_text])[0]
 
-            response_data = {
+            output = {
                 "resume_text": resume_text,
                 "resume_embedding": resume_embedding,
                 "jd_text": jd_text,
-                "jd_embedding": jd_embedding
+                "jd_embedding": jd_embedding,
             }
 
-            response_serializer = EmbeddingResponseSerializer(response_data)
+            response = EmbeddingResponseSerializer(output)
 
-            return Response({
-                "status": "success",
-                "message": "Resume and JD analyzed successfully",
-                "data": response_serializer.data
-            }, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "status": "success",
+                    "message": "Resume and JD analyzed successfully",
+                    "data": response.data,
+                },
+                status=status.HTTP_200_OK,
+            )
 
         except Exception as e:
             return Response(
                 {"status": "error", "message": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
