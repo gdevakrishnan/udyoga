@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   CheckCircle,
   Sparkles,
@@ -15,6 +15,10 @@ const AnalyzeGap = ({
   error,
   onRegenerate,
 }) => {
+  useEffect(() => {
+    console.log(analysis);
+  }, [analysis]);
+  
   if (loading)
     return (
       <div className="bg-white p-12 rounded-2xl shadow-lg border">

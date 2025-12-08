@@ -44,3 +44,13 @@ class AnalyzeRequestSerializer(serializers.Serializer):
     )
     jd_text = serializers.CharField()
     resume_text = serializers.CharField()
+
+class QueryRequestSerializer(serializers.Serializer):
+    jd_emb = serializers.ListField(child=serializers.FloatField())
+    resume_emb = serializers.ListField(child=serializers.FloatField())
+    jd_text = serializers.CharField()
+    resume_text = serializers.CharField()
+    query = serializers.CharField()
+    chat_history = serializers.ListField(
+        child=serializers.DictField(), required=False
+    )

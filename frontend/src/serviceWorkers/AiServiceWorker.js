@@ -54,3 +54,21 @@ export const analyzeResumeJd = async (payload, token) => {
     return { error: true, message: err.response?.data || "Register failed" };
   }
 };
+
+
+// ---------------------------
+// Query JD and Resume
+// ---------------------------
+export const queryResumeJd = async (payload, token) => {
+  try {
+    const response = await axios.post(`${BASE_URL}query/`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+    });
+    return response;
+  } catch (err) {
+    return { error: true, message: err.response?.data || "Register failed" };
+  }
+};

@@ -5,7 +5,6 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_groq import ChatGroq
 
-
 # ==========================================================
 # 1. Compute cosine similarity
 # ==========================================================
@@ -32,9 +31,9 @@ parser = JsonOutputParser(pydantic_object=AnalysisOutput)
 
 
 # ==========================================================
-# 3. DEEP ANALYSIS PROMPT  (Huge upgrade)
+# 3. Deep Analysis Prompt
 # ==========================================================
-prompt_template = ChatPromptTemplate.from_template("""
+analysis_prompt_template = ChatPromptTemplate.from_template("""
 You are an elite career consultant and technical hiring strategist.  
 Your role is to deeply analyze how well the candidate’s resume aligns with the job description.
 
@@ -129,14 +128,14 @@ llm = ChatGroq(
 # ==========================================================
 # 5. LLM Chain: Prompt → LLM → JSON parser
 # ==========================================================
-chain = prompt_template | llm | parser
+analysis_chain = analysis_prompt_template | llm | parser
 
 
 # ==========================================================
 # 6. Analyze JD & Resume
 # ==========================================================
 def analyze_with_groq(jd_text: str, resume_text: str):
-    return chain.invoke({
+    return analysis_chain.invoke({
         "jd": jd_text,
         "resume": resume_text,
         "format_instructions": parser.get_format_instructions()
@@ -144,7 +143,7 @@ def analyze_with_groq(jd_text: str, resume_text: str):
 
 
 # ==========================================================
-# 7. Final output wrapper
+# 7. Final output wrapper for analysis
 # ==========================================================
 def analyze(jd_emb, resume_emb, jd_text, resume_text):
     score = compute_match_score(jd_emb, resume_emb)
@@ -157,4 +156,71 @@ def analyze(jd_emb, resume_emb, jd_text, resume_text):
         "matchingSkills": llm_data.get("matchingSkills", []),
         "areasForImprovement": llm_data.get("areasForImprovement", []),
         "recommendations": llm_data.get("recommendations", [])
+    }
+
+
+# ==========================================================
+# 8. Query Resume & JD with previous chat
+# ==========================================================
+query_prompt_template = ChatPromptTemplate.from_template("""
+You are a helpful expert career assistant.
+
+Use the Job Description and Resume to answer the user's question clearly and concisely.
+Use the previous chat history to maintain context.
+
+Return ONLY a plain text answer. No JSON. No formatting.
+
+--- JOB DESCRIPTION ---
+{jd}
+
+--- RESUME ---
+{resume}
+
+--- CHAT HISTORY ---
+{chat_history}
+
+--- USER QUERY ---
+{query}
+""")
+
+# Build chain for queries
+query_chain = query_prompt_template | llm
+
+
+# =========================
+# FIXED QUERY FUNCTION
+# =========================
+def query_resume_jd(jd_emb, resume_emb, jd_text, resume_text, query, chat_history=None):
+    """
+    Performs a conversational query against the resume and JD with optional previous conversation.
+    """
+
+    # Compute match score
+    score = compute_match_score(jd_emb, resume_emb)
+
+    # Format chat history into clean text
+    history_str = ""
+    if chat_history:
+        history_entries = []
+        for msg in chat_history:
+            role = msg.get("role", "user")
+            content = msg.get("content", "")
+            history_entries.append(f"{role}: {content}")
+        history_str = "\n".join(history_entries)
+
+    # Build prompt input
+    prompt_input = {
+        "jd": jd_text,
+        "resume": resume_text,
+        "chat_history": history_str,
+        "query": query
+    }
+
+    response = query_chain.invoke(prompt_input)
+
+    # Return structured API result
+    return {
+        "status": 200,
+        "match_score": score,
+        "response": response
     }

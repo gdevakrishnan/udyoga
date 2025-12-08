@@ -28,7 +28,7 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
 from urllib.parse import urljoin
 
-from .serializers import ScrapeSerializer, ResumeJDSerializer, EmbeddingResponseSerializer
+from .serializers import ScrapeSerializer, ResumeJDSerializer, EmbeddingResponseSerializer, QueryRequestSerializer
 from .permissions import IsCandidate
 
 from rest_framework.views import APIView
@@ -36,7 +36,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .serializers import AnalyzeRequestSerializer
-from .utils.analysisUtils import analyze
+from .utils.analysisUtils import analyze, query_resume_jd
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -334,3 +334,29 @@ class AnalyzeResumeJDView(APIView):
         )
 
         return Response(result, status=status.HTTP_200_OK)
+    
+class QueryResumeJDView(APIView):
+    permission_classes = [IsCandidate]
+
+    def post(self, request):
+        serializer = QueryRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        try:
+            result = query_resume_jd(
+                jd_emb=data["jd_emb"],
+                resume_emb=data["resume_emb"],
+                jd_text=data["jd_text"],
+                resume_text=data["resume_text"],
+                query=data["query"],
+                chat_history=data.get("chat_history")
+            )
+
+            return Response(result, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                {"status": "error", "message": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
