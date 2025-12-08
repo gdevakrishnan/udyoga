@@ -83,7 +83,7 @@ const QueryChat = ({ data, token, chatHistory, setChatHistory }) => {
       <div className="flex-1 p-6 overflow-y-auto space-y-4">
         {messages.map((m) => (
           <div key={m.id} className={`flex ${m.type === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`px-4 py-3 rounded-2xl max-w-md break-words whitespace-pre-wrap ${
+            <div className={`px-4 py-3 rounded-2xl max-w-md wrap-break-words whitespace-pre-wrap ${
               m.type === "user" ? "bg-emerald-600 text-white" : "bg-gray-100 text-gray-800"
             }`}>
               {m.content}

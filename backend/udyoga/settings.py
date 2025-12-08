@@ -14,6 +14,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
 import os
+import dj_database_url 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -89,17 +90,22 @@ WSGI_APPLICATION = 'udyoga.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": os.getenv('DB_ENGINE'),
-        "NAME": os.getenv('DB_NAME'),
-        "USER": os.getenv('DB_USER'),
-        "PASSWORD": os.getenv('DB_PASSWORD'),
-        "HOST": os.getenv('DB_HOST'),
-        "PORT": os.getenv('DB_PORT'),
-        # "OPTIONS": {
-        #     "sslmode": os.getenv('DB_SSLMODE'),
-        # },
-    }
+    # "default": {
+    #     "ENGINE": os.getenv('DB_ENGINE'),
+    #     "NAME": os.getenv('DB_NAME'),
+    #     "USER": os.getenv('DB_USER'),
+    #     "PASSWORD": os.getenv('DB_PASSWORD'),
+    #     "HOST": os.getenv('DB_HOST'),
+    #     "PORT": os.getenv('DB_PORT'),
+    #     "OPTIONS": {
+    #         "sslmode": os.getenv('DB_SSLMODE'),
+    #     },
+    # }
+
+    'default': dj_database_url.config(
+        default=os.getenv("DB_URL"),
+        conn_max_age=600
+    )
 }
 
 # Password validation
