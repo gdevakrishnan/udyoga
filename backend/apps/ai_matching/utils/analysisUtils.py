@@ -1,31 +1,14 @@
 import os
 import numpy as np
-import json
-import re
-from groq import Groq
+from pydantic import BaseModel, Field
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_groq import ChatGroq
 
-# -----------------------------
-# 1. Extract JSON safely
-# -----------------------------
-def extract_json(text):
-    """
-    Safely extracts JSON from an LLM response, even if extra text exists.
-    """
-    match = re.search(r"\{(.|\n)*\}", text)
-    if not match:
-        raise ValueError("No JSON object found in LLM output")
 
-    json_str = match.group(0).strip()
-
-    try:
-        return json.loads(json_str)
-    except Exception as e:
-        print("JSON Cleaning Error →", e)
-        raise e
-
-# -----------------------------
-# 2. Compute cosine similarity
-# -----------------------------
+# ==========================================================
+# 1. Compute cosine similarity
+# ==========================================================
 def compute_match_score(jd_emb, resume_emb):
     jd_emb = np.array(jd_emb)
     resume_emb = np.array(resume_emb)
@@ -33,90 +16,145 @@ def compute_match_score(jd_emb, resume_emb):
     cosine = np.dot(jd_emb, resume_emb) / (
         np.linalg.norm(jd_emb) * np.linalg.norm(resume_emb)
     )
-    # Scale (-1,1) → (0,10)
     return round(float((cosine + 1) / 2 * 10), 2)
 
-# -----------------------------
-# 3. Generic AI model function
-# -----------------------------
-def ai_model(prompt: str, data: dict = None, model: str = "llama-3.1-8b-instant"):
-    """
-    Calls the Groq LLM with a prompt and optional data.
-    
-    :param prompt: The prompt string to send to the LLM.
-    :param data: Optional dictionary of extra context or variables.
-    :param api_key: Groq API key (if not set as environment variable).
-    :param model: Model to use in Groq.
-    :return: The LLM response as a string.
-    """
-    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-    # If data is provided, interpolate into the prompt
-    if data:
-        # Replace {key} in prompt with value from data
-        for key, value in data.items():
-            placeholder = "{" + key + "}"
-            prompt = prompt.replace(placeholder, str(value))
+# ==========================================================
+# 2. Pydantic JSON schema
+# ==========================================================
+class AnalysisOutput(BaseModel):
+    matchingSkills: list[str] = Field(default_factory=list)
+    areasForImprovement: list[str] = Field(default_factory=list)
+    recommendations: list[str] = Field(default_factory=list)
 
-    completion = client.chat.completions.create(
-        model=model,
-        messages=[{"role": "user", "content": prompt}]
-    )
 
-    return completion.choices[0].message.content
+parser = JsonOutputParser(pydantic_object=AnalysisOutput)
 
-# -----------------------------
-# 4. Example: Resume-JD analysis using Groq
-# -----------------------------
 
-def analyze_with_groq(jd_text, resume_text):
-    prompt = """
-You are a top-tier career coach and recruiter, highly experienced in resume analysis, skills mapping, and job matching. 
-Carefully analyze the candidate's resume against the job description provided.
+# ==========================================================
+# 3. DEEP ANALYSIS PROMPT  (Huge upgrade)
+# ==========================================================
+prompt_template = ChatPromptTemplate.from_template("""
+You are an elite career consultant and technical hiring strategist.  
+Your role is to deeply analyze how well the candidate’s resume aligns with the job description.
 
-Your task is to return a **JSON object only**, with no extra text, explanations, or markdown.
+Return ONLY a JSON object.  
+No explanations or markdown. No extra text.
 
-The JSON MUST strictly follow this format:
+The JSON MUST strictly follow this structure:
 
-{
-  "matchingSkills": [],        // List of bullet points: resume skills/experiences that match JD requirements, plus suggestions to highlight/add other required JD skills
-  "areasForImprovement": [],   // List of bullet points: suggestions to improve the resume overall to attract more job offers
-  "recommendations": []        // List of bullet points: suggestions on how to tailor this resume specifically for this job
-}
+{{
+  "matchingSkills": [],
+  "areasForImprovement": [],
+  "recommendations": []
+}}
 
-Guidelines:
-1. Each field must be an **array of strings**, where each string is a single actionable point.
-2. Be precise and comprehensive. Mention concrete skills, tools, technologies, or achievements.
-3. For matchingSkills, identify exact matches from resume to JD, then suggest ways to incorporate any missing JD-required skills.
-4. For areasForImprovement, give broad, actionable resume enhancement tips to boost general job offer success.
-5. For recommendations, focus on job-specific tailoring actions using the candidate's existing experience.
-6. Avoid vague statements. Include concrete examples where possible.
-7. Do not return any paragraphs. Each idea should be a separate item in the array.
+ALL THREE FIELDS MUST EXIST.  
+NONE OF THEM CAN BE EMPTY.
+
+===============================================================
+### HOW TO ANALYZE (EXTREMELY IMPORTANT)
+===============================================================
+
+---------------------------
+### MATCHING SKILLS (DEEP ANALYSIS)
+---------------------------
+Return 6–12 **high-quality** bullet points.
+
+Each bullet point MUST be a **full, meaningful sentence** (not a list).
+
+Each sentence must describe one of:
+
+1. **Skills in the resume that strongly match JD requirements**  
+   Example: "Your hands-on experience with Python and REST API development directly aligns with the JD's need for backend API ownership."
+
+2. **Skills required by the JD that are missing or weak in the resume**  
+   Example: "The JD emphasizes AWS infrastructure management, but your resume does not mention any cloud platforms—adding AWS or equivalent experience would significantly increase alignment."
+
+3. **Important skills the candidate should highlight more clearly**  
+   Example: "Your SQL experience is mentioned briefly, but highlighting query optimization or performance tuning would strengthen your backend profile."
+
+- DO NOT output raw skill lists  
+- DO NOT output generic statements  
+- Each item must be specific, actionable, and context-aware.
+
+---------------------------
+### AREAS FOR IMPROVEMENT (RESUME QUALITY)
+---------------------------
+Provide 4–8 detailed, actionable improvements focusing on:
+
+- Missing metrics and achievements  
+- Structure and clarity upgrades  
+- Stronger storytelling  
+- Better alignment of responsibilities  
+- Improving seniority signalling  
+- Bringing technical depth to the forefront  
+
+Examples:
+- "Add quantifiable results such as performance improvements, cost savings, or user impact to enhance credibility."
+- "Group your technical skills by category to make them easier for ATS and recruiters to understand."
+
+---------------------------
+### RECOMMENDATIONS (JOB-SPECIFIC TAILORING)
+---------------------------
+Provide 4–8 job-alignment strategies.
+
+Examples:
+- "Move cloud-related projects higher in the resume to match the JD’s emphasis on AWS and distributed systems."
+- "Rewrite your professional summary to emphasize backend API ownership, as this is central to the JD."
+
+===============================================================
+### INPUTS
+===============================================================
 
 --- JOB DESCRIPTION ---
 {jd}
 
 --- RESUME ---
 {resume}
-"""
-    data = {"jd": jd_text, "resume": resume_text}
-    response = ai_model(prompt, data=data)
-    return extract_json(response)
+
+{format_instructions}
+""")
 
 
-# -----------------------------
-# 5. Wrapper: analyze
-# -----------------------------
+# ==========================================================
+# 4. Groq LLM
+# ==========================================================
+llm = ChatGroq(
+    model="llama-3.1-8b-instant",
+    groq_api_key=os.getenv("GROQ_API_KEY")
+)
+
+
+# ==========================================================
+# 5. LLM Chain: Prompt → LLM → JSON parser
+# ==========================================================
+chain = prompt_template | llm | parser
+
+
+# ==========================================================
+# 6. Analyze JD & Resume
+# ==========================================================
+def analyze_with_groq(jd_text: str, resume_text: str):
+    return chain.invoke({
+        "jd": jd_text,
+        "resume": resume_text,
+        "format_instructions": parser.get_format_instructions()
+    })
+
+
+# ==========================================================
+# 7. Final output wrapper
+# ==========================================================
 def analyze(jd_emb, resume_emb, jd_text, resume_text):
     score = compute_match_score(jd_emb, resume_emb)
     llm_data = analyze_with_groq(jd_text, resume_text)
 
     return {
         "status": 200,
-        "message": "Analyzed successfully!!",
+        "message": "Analyzed successfully!",
         "match_score": score,
-        "matchingSkills": llm_data.get("matchingSkills", ""),
-        "areasForImprovement": llm_data.get("areasForImprovement", ""),
-        "recommendations": llm_data.get("recommendations", "")
+        "matchingSkills": llm_data.get("matchingSkills", []),
+        "areasForImprovement": llm_data.get("areasForImprovement", []),
+        "recommendations": llm_data.get("recommendations", [])
     }
-
