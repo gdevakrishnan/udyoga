@@ -31,6 +31,17 @@ from urllib.parse import urljoin
 from .serializers import ScrapeSerializer, ResumeJDSerializer, EmbeddingResponseSerializer
 from .permissions import IsCandidate
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+from .serializers import AnalyzeRequestSerializer
+from .utils.analysisUtils import analyze
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status 
+
 
 # ------------------------------------
 # Hugging Face Embedding Client
@@ -296,3 +307,30 @@ class GetEmbeddingsView(APIView):
                 {"status": "error", "message": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+#=======================
+# Analysis
+#=======================
+
+class AnalyzeResumeJDView(APIView):
+    permission_classes = [IsCandidate]
+
+    def post(self, request):
+        serializer = AnalyzeRequestSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(
+                {"status": 400, "errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        data = serializer.validated_data
+
+        result = analyze(
+            jd_emb=data["jd_emb"],
+            resume_emb=data["resume_emb"],
+            jd_text=data["jd_text"],
+            resume_text=data["resume_text"]
+        )
+
+        return Response(result, status=status.HTTP_200_OK)

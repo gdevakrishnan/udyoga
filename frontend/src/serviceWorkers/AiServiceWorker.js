@@ -36,3 +36,21 @@ export const getEmbeddingsResumeJd = async (payload, token) => {
     return { error: true, message: err.response?.data || "Register failed" };
   }
 };
+
+
+// ---------------------------
+// Analyze JD and Resume
+// ---------------------------
+export const analyzeResumeJd = async (payload, token) => {
+  try {
+    const response = await axios.post(`${BASE_URL}analyze/`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+    });
+    return response;
+  } catch (err) {
+    return { error: true, message: err.response?.data || "Register failed" };
+  }
+};
