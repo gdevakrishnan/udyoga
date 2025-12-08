@@ -15,6 +15,9 @@ const Analyze = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // <-- Lift chat history state here
+  const [chatHistory, setChatHistory] = useState([]);
+
   const runAnalysis = async (data) => {
     setLoading(true);
     setError(null);
@@ -88,7 +91,12 @@ const Analyze = () => {
           )}
 
           {currentStep === "queries" && (
-            <QueryChat data={submittedData} token={localStorage.getItem("udhyoga_access_token")} />
+            <QueryChat
+              data={submittedData}
+              token={localStorage.getItem("udhyoga_access_token")}
+              chatHistory={chatHistory}
+              setChatHistory={setChatHistory}
+            />
           )}
         </div>
       </div>

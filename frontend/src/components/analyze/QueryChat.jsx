@@ -3,47 +3,33 @@ import React, { useState } from "react";
 import { MessageSquare, Send } from "lucide-react";
 import { queryResumeJd } from "../../serviceWorkers/AiServiceWorker";
 
-const QueryChat = ({ data, token }) => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      type: "assistant",
-      content: "Hello! Ask anything about your resume and JD analysis.",
-    },
-  ]);
+const QueryChat = ({ data, token, chatHistory, setChatHistory }) => {
+  const [messages, setMessages] = useState(() => {
+    if (chatHistory && chatHistory.length > 0) return chatHistory;
+    return [
+      {
+        id: 1,
+        type: "assistant",
+        content: "Hello! Ask anything about your resume and JD analysis.",
+      },
+    ];
+  });
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Safely extract assistant response from LLM nested array/object
-  const extractAssistantContent = (llmResponse) => {
-    try {
-      if (!llmResponse) return "";
-      // If it's a string, just return it
-      if (typeof llmResponse === "string") return llmResponse;
-
-      // If it's nested array like [["content", "text", {...}]]
-      if (Array.isArray(llmResponse)) {
-        for (let entry of llmResponse) {
-          if (Array.isArray(entry) && entry[0] === "content") {
-            return entry[1];
-          }
-        }
-      }
-
-      // fallback to JSON stringify if nothing found
-      return JSON.stringify(llmResponse, null, 2);
-    } catch (err) {
-      console.error("Error extracting assistant content:", err);
-      return "Error parsing response.";
-    }
+  // Update chat history whenever messages change
+  const updateMessages = (newMessages) => {
+    setMessages(newMessages);
+    if (setChatHistory) setChatHistory(newMessages); // persist to parent
   };
 
   const send = async () => {
     if (!input.trim() || loading) return;
 
     const userMsg = { id: messages.length + 1, type: "user", content: input };
-    setMessages((prev) => [...prev, userMsg]);
+    const updatedMessages = [...messages, userMsg];
+    updateMessages(updatedMessages);
     setInput("");
     setLoading(true);
 
@@ -54,35 +40,32 @@ const QueryChat = ({ data, token }) => {
         resume_text: data.resume_text,
         jd_text: data.jd_text,
         query: input,
-        chat_history: messages.map((m) => ({
+        chat_history: updatedMessages.map((m) => ({
           role: m.type === "user" ? "user" : "assistant",
           content: m.content,
         })),
       };
 
       const response = await queryResumeJd(payload, token);
-
       const llmResponse = response?.data?.response;
-      const assistantContent = extractAssistantContent(llmResponse);
 
-      // Set assistant message
-      const assistantMsg = {
-        id: messages.length + 2,
-        type: "assistant",
-        content: assistantContent,
-      };
+      let assistantContent = "Oops! Something went wrong. Please try again later.";
 
-      setMessages((prev) => [...prev, assistantMsg]);
+      if (Array.isArray(llmResponse) && llmResponse.length > 0) {
+        const firstEntry = llmResponse[0];
+        if (Array.isArray(firstEntry) && firstEntry[0] === "content") {
+          assistantContent = firstEntry[1];
+        }
+      } else if (typeof llmResponse === "string") {
+        assistantContent = llmResponse;
+      }
+
+      const assistantMsg = { id: updatedMessages.length + 1, type: "assistant", content: assistantContent };
+      updateMessages([...updatedMessages, assistantMsg]);
     } catch (err) {
       console.error(err);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: messages.length + 2,
-          type: "assistant",
-          content: "Error connecting to the server.",
-        },
-      ]);
+      const errorMsg = { id: messages.length + 2, type: "assistant", content: "Error connecting to the server." };
+      updateMessages([...messages, errorMsg]);
     } finally {
       setLoading(false);
     }
@@ -99,19 +82,10 @@ const QueryChat = ({ data, token }) => {
       {/* Messages */}
       <div className="flex-1 p-6 overflow-y-auto space-y-4">
         {messages.map((m) => (
-          <div
-            key={m.id}
-            className={`flex ${
-              m.type === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
-            <div
-              className={`px-4 py-3 rounded-2xl max-w-md break-words whitespace-pre-wrap ${
-                m.type === "user"
-                  ? "bg-emerald-600 text-white"
-                  : "bg-gray-100 text-gray-800"
-              }`}
-            >
+          <div key={m.id} className={`flex ${m.type === "user" ? "justify-end" : "justify-start"}`}>
+            <div className={`px-4 py-3 rounded-2xl max-w-md break-words whitespace-pre-wrap ${
+              m.type === "user" ? "bg-emerald-600 text-white" : "bg-gray-100 text-gray-800"
+            }`}>
               {m.content}
             </div>
           </div>
@@ -119,9 +93,7 @@ const QueryChat = ({ data, token }) => {
 
         {loading && (
           <div className="flex justify-start">
-            <div className="px-4 py-3 rounded-2xl max-w-md bg-gray-100 text-gray-800 italic">
-              Typing...
-            </div>
+            <div className="px-4 py-3 rounded-2xl max-w-md bg-gray-100 text-gray-800 italic">Typing...</div>
           </div>
         )}
       </div>
