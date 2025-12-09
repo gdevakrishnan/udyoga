@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = `${import.meta.env.BASE_URL}accounts/`;
+const BASE_URL = `${import.meta.env.VITE_BASE_URL}accounts/`;
 
 // ---------------------------
 // REGISTER

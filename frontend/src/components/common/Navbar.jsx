@@ -27,9 +27,9 @@ const links = isAuthenticated
   ? allLinks.filter((link) => {
       if (link.label === "Home") return true;
       if (link.label === "Profile") return true;
-      if (link.label === "Recruiter" && user.role === "recruiter") return true;
-      if (link.label === "Analyze" && user.role === "candidate") return true;
-      if (link.label === "Candidate" && user.role === "candidate") return true;
+      if (link.label === "Recruiter" && user?.role === "recruiter") return true;
+      if (link.label === "Analyze" && user?.role === "candidate") return true;
+      if (link.label === "Candidate" && user?.role === "candidate") return true;
       return false;
     })
   : allLinks.filter((link) => link.label === "Home" || link.label === "Login");

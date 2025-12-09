@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = `${import.meta.env.BASE_URL}ai/`;
+const BASE_URL = `${import.meta.env.VITE_BASE_URL}ai/`;
 
 // ---------------------------
 // Scrape JD
