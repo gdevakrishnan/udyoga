@@ -11,7 +11,7 @@ class ResumeJDSerializer(serializers.Serializer):
         choices=["custom", "default"],
         required=True
     )
-    resume_url = serializers.URLField(required=False, allow_null=True)
+    resume_url = serializers.URLField(required=False, allow_null=True, allow_blank=True)
     resume_text = serializers.CharField(required=False, allow_blank=True)
     jd_text = serializers.CharField(required=True)
 

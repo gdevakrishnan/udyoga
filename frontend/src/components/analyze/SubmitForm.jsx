@@ -50,8 +50,6 @@ const SubmitForm = ({ user, onSubmit, token }) => {
       return;
     }
 
-    console.log(result.text)
-
     setFormData((prev) => ({
       ...prev,
       resumeSource: "custom",

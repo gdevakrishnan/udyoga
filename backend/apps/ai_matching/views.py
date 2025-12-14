@@ -234,7 +234,7 @@ class GetEmbeddingsView(APIView):
         serializer.is_valid(raise_exception=True)
 
         resume_type = serializer.validated_data["type"]
-        resume_url = serializer.validated_data.get("resume_url")
+        resume_url = serializer.validated_data.get("resume_url", "")
         resume_text_input = serializer.validated_data.get("resume_text", "")
         jd_text = serializer.validated_data["jd_text"]
 

@@ -14,11 +14,7 @@ const AnalyzeGap = ({
   loading,
   error,
   onRegenerate,
-}) => {
-  useEffect(() => {
-    console.log(analysis);
-  }, [analysis]);
-  
+}) => {  
   if (loading)
     return (
       <div className="bg-white p-12 rounded-2xl shadow-lg border">
