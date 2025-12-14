@@ -30,6 +30,7 @@ class BaseRolePermission(BasePermission):
             if not role:
                 return False
             
+            print(role)
             user_role = role
 
             return role == user_role

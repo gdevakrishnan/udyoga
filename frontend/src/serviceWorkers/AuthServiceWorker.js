@@ -82,12 +82,18 @@ export const getUserDetails = async () => {
 export const refreshAccessToken = async () => {
   try {
     const refresh = localStorage.getItem("udhyoga_refresh_token");
+    const access = localStorage.getItem("udhyoga_access_token");
 
     const res = await axios.post(`${BASE_URL}auth/refresh/`, {
       refresh: refresh,
+    }, {
+      headers: {
+        Authorization: `Bearer ${access}`
+      }
     });
 
     localStorage.setItem("udhyoga_access_token", res.data.access);
+    localStorage.setItem("udhyoga_refresh_token", res.data.refresh);
 
     return res.data;
   } catch (err) {
