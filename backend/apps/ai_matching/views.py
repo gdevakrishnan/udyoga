@@ -313,8 +313,6 @@ class GetEmbeddingsView(APIView):
 #=======================
 
 class AnalyzeResumeJDView(APIView):
-    permission_classes = [IsCandidate]
-
     def post(self, request):
         serializer = AnalyzeRequestSerializer(data=request.data)
 
@@ -336,8 +334,6 @@ class AnalyzeResumeJDView(APIView):
         return Response(result, status=status.HTTP_200_OK)
     
 class QueryResumeJDView(APIView):
-    permission_classes = [IsCandidate]
-
     def post(self, request):
         serializer = QueryRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
