@@ -20,6 +20,8 @@ class BaseRolePermission(BasePermission):
             )
             response.raise_for_status()
             user_data = response.json()
+            print(response)
+            print(user_data)
             return user_data.get("data").get("role") == self.role
         except Exception:
             return False
