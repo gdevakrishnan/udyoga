@@ -207,7 +207,7 @@ const Home = () => {
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
                   <div key={index} className="flex items-center space-x-3">
-                    <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0" />
+                    <CheckCircle className="w-6 h-6 text-emerald-600 shrink-0" />
                     <span className="text-lg text-gray-700">{benefit}</span>
                   </div>
                 ))}
