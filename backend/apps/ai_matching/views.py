@@ -97,8 +97,6 @@ def get_selenium_driver(browser: str = "chrome"):
 #               SCRAPER VIEW
 # ======================================================
 class ScrapeAPIView(APIView):
-    permission_classes = [IsCandidate]
-
     def post(self, request, *args, **kwargs):
         serializer = ScrapeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -227,8 +225,6 @@ class ScrapeAPIView(APIView):
 #                 EMBEDDINGS VIEW
 # ======================================================
 class GetEmbeddingsView(APIView):
-    permission_classes = [IsCandidate]
-
     def post(self, request):
         serializer = ResumeJDSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
