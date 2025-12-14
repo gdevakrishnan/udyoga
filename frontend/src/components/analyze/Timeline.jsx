@@ -5,7 +5,7 @@ import { CheckCircle } from "lucide-react";
 const Timeline = ({ currentStep }) => {
   const steps = [
     { id: 1, label: "Submit", key: "submit" },
-    { id: 2, label: "Analyze Gap", key: "analyze" },
+    { id: 2, label: "Analyze", key: "analyze" },
     { id: 3, label: "Queries", key: "queries" },
   ];
 

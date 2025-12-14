@@ -1,7 +1,24 @@
-import React, { useState } from 'react';
-import { Menu, X, Upload, Target, TrendingUp, Sparkles, CheckCircle, ArrowRight, Users, Briefcase, BookOpen, Zap } from 'lucide-react';
+import React, { useContext } from 'react';
+import { Target, TrendingUp, Sparkles, CheckCircle, ArrowRight, Briefcase, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import AppContext from '../../context/AppContext';
 
 const Home = () => {
+  const { isAuthenticated, user } = useContext(AppContext);
+  const navigate = useNavigate();
+
+  const handleButtonClick = () => {
+    if (isAuthenticated && user) {
+      if (user.role === 'candidate') {
+        navigate('/analyze');
+      } else if (user.role === 'recruiter') {
+        navigate('/job-description');
+      }
+    } else {
+      navigate('/login');
+    }
+  };
+
   const features = [
     {
       icon: <Target className="w-6 h-6" />,
@@ -82,12 +99,9 @@ const Home = () => {
                 Udhyoga analyzes your resume against job descriptions, identifies skill gaps, and provides personalized recommendations to boost your career.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="px-8 py-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl">
+                <button onClick={handleButtonClick} className="px-8 py-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl">
                   <span className="font-semibold">Start Free Analysis</span>
                   <ArrowRight className="w-5 h-5" />
-                </button>
-                <button className="px-8 py-4 bg-white text-emerald-600 border-2 border-emerald-600 rounded-lg hover:bg-emerald-50 transition font-semibold">
-                  Watch Demo
                 </button>
               </div>
             </div>
@@ -235,7 +249,7 @@ const Home = () => {
                   <span>Personalized guidance</span>
                 </div>
               </div>
-              <button className="w-full px-8 py-4 bg-white text-emerald-600 rounded-lg hover:bg-gray-50 transition font-semibold shadow-lg">
+              <button onClick={handleButtonClick} className="w-full px-8 py-4 bg-white text-emerald-600 rounded-lg hover:bg-gray-50 transition font-semibold shadow-lg">
                 Get Started Free
               </button>
             </div>
@@ -252,7 +266,7 @@ const Home = () => {
           <p className="text-xl text-emerald-100 mb-8">
             Join thousands of students who have successfully landed their dream jobs with Udhyoga's AI-powered guidance.
           </p>
-          <button className="px-10 py-4 bg-white text-emerald-600 rounded-lg hover:bg-gray-50 transition font-semibold text-lg shadow-xl hover:shadow-2xl">
+          <button onClick={handleButtonClick} className="px-10 py-4 bg-white text-emerald-600 rounded-lg hover:bg-gray-50 transition font-semibold text-lg shadow-xl hover:shadow-2xl">
             Start Your Free Analysis Now
           </button>
         </div>

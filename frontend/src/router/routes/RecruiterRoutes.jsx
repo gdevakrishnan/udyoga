@@ -1,10 +1,10 @@
-import Dashboard from "../../pages/recruiter/Dashboard";
+import JobDescription from "../../pages/recruiter/JobDescription";
 import Profile from "../../pages/recruiter/Profile";
 
 const RecruiterRoutes = [
   {
-    path: "recruiter",
-    element: <Dashboard />,
+    path: "job-description",
+    element: <JobDescription />,
   },
   {
     path: "r/profile",

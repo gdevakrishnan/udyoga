@@ -1,6 +1,6 @@
 import React, { useState, Fragment, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Home } from "lucide-react";
+import { Menu, X, Home, BarChart2, FileText, LogIn, User } from "lucide-react";
 import AppContext from "../../context/AppContext";
 
 const Navbar = () => {
@@ -16,20 +16,18 @@ const profileLink = isAuthenticated
 
 const allLinks = [
   { to: "/", label: "Home", icon: <Home size={20} /> },
-  { to: "/recruiter", label: "Recruiter", icon: <Home size={20} /> },
-  { to: "/candidate", label: "Candidate", icon: <Home size={20} /> },
-  { to: "/analyze", label: "Analyze", icon: <Home size={20} /> },
-  { to: "/login", label: "Login", icon: <Home size={20} /> },
-  { to: profileLink, label: "Profile", icon: <Home size={20} /> },
+  { to: "/analyze", label: "Analyze", icon: <BarChart2 size={20} /> },
+  { to: "/job-description", label: "Job Description", icon: <FileText size={20} /> },
+  { to: "/login", label: "Login", icon: <LogIn size={20} /> },
+  { to: profileLink, label: "Profile", icon: <User size={20} /> },
 ];
 
 const links = isAuthenticated
   ? allLinks.filter((link) => {
       if (link.label === "Home") return true;
       if (link.label === "Profile") return true;
-      if (link.label === "Recruiter" && user?.role === "recruiter") return true;
+      if (link.label === "Job Description" && user?.role === "recruiter") return true;
       if (link.label === "Analyze" && user?.role === "candidate") return true;
-      if (link.label === "Candidate" && user?.role === "candidate") return true;
       return false;
     })
   : allLinks.filter((link) => link.label === "Home" || link.label === "Login");
