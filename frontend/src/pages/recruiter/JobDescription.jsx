@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import MDEditor from "@uiw/react-md-editor";
 import { Plus, X, Edit, Trash2, Sparkles, Copy, Check } from "lucide-react";
 import Spinner from "../../components/utils/Spinner";
@@ -526,91 +526,8 @@ const JobDescription = () => {
                 </div>
               )}
 
-              {/* STEP 3: Edit with Markdown Editor */}
-              {modalStep === "preview" && isEdit && (
-                <div>
-                  {/* Basic Info Display */}
-                  <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
-                          Job Title
-                        </label>
-                        <p className="text-gray-900">{form.title}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
-                          Department
-                        </label>
-                        <p className="text-gray-900">{form.department}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
-                          Location
-                        </label>
-                        <p className="text-gray-900">{form.location}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
-                          Experience
-                        </label>
-                        <p className="text-gray-900">
-                          {form.experience_min} - {form.experience_max} years
-                        </p>
-                      </div>
-                      <div className="col-span-2">
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
-                          Skills
-                        </label>
-                        <p className="text-gray-900">{form.skills}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Description Editor */}
-                  <div className="mb-6">
-                    <h3 className="font-semibold text-lg mb-2">Description</h3>
-                    <MDEditor
-                      value={form.description}
-                      onChange={(v) =>
-                        setForm({ ...form, description: v || "" })
-                      }
-                      height={200}
-                    />
-                  </div>
-
-                  {/* Responsibilities Editor */}
-                  <div className="mb-6">
-                    <h3 className="font-semibold text-lg mb-2">
-                      Responsibilities
-                    </h3>
-                    <MDEditor
-                      value={form.responsibilities}
-                      onChange={(v) =>
-                        setForm({ ...form, responsibilities: v || "" })
-                      }
-                      height={200}
-                    />
-                  </div>
-
-                  {/* Qualifications Editor */}
-                  <div className="mb-6">
-                    <h3 className="font-semibold text-lg mb-2">
-                      Qualifications
-                    </h3>
-                    <MDEditor
-                      value={form.qualifications}
-                      onChange={(v) =>
-                        setForm({ ...form, qualifications: v || "" })
-                      }
-                      height={200}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* View Existing JD */}
-              {modalStep === "preview" && selectedJD && (
+              {/* View Existing JD or Edit Mode */}
+              {modalStep === "preview" && (
                 <div>
                   {/* Basic Info Display */}
                   <div className="mb-6 p-4 bg-gray-50 rounded-lg">
