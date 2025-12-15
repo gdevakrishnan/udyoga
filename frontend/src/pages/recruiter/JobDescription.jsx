@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import MDEditor from "@uiw/react-md-editor";
 import { Plus, X, Edit, Trash2, Sparkles, Copy, Check } from "lucide-react";
 import Spinner from "../../components/utils/Spinner";
+import ConfirmModal from "../../components/utils/ConfirmModal";
 import {
     listJDs,
     createJD,
@@ -35,10 +36,18 @@ const JobDescription = () => {
     const [generating, setGenerating] = useState(false);
     const [generatedContent, setGeneratedContent] = useState(null);
     const [copied, setCopied] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [deleteModal, setDeleteModal] = useState({
+        isOpen: false,
+        itemId: null,
+        itemName: ""
+    });
 
     const loadJDs = async () => {
+        setLoading(true);
         const res = await listJDs(token);
         if (res?.status === 200) setJds(res.data);
+        setLoading(false);
     };
 
     useEffect(() => {
@@ -239,8 +248,23 @@ const JobDescription = () => {
         }
     };
 
+    const openDeleteModal = (id, title) => {
+        setDeleteModal({
+            isOpen: true,
+            itemId: id,
+            itemName: title
+        });
+    };
+
+    const closeDeleteModal = () => {
+        setDeleteModal({
+            isOpen: false,
+            itemId: null,
+            itemName: ""
+        });
+    };
+
     const handleDelete = async (id) => {
-        if (!confirm("Are you sure you want to delete this JD?")) return;
         const res = await deleteJD(id, token);
         if (res?.status === 200 || res?.status === 204) {
             loadJDs();
@@ -271,13 +295,17 @@ const JobDescription = () => {
                         onClick={openCreate}
                         className="bg-emerald-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-emerald-700"
                     >
-                        <Plus size={18} /> Create Job
+                        <Plus size={18} /> Create
                     </button>
                 </div>
 
                 {/* JD List */}
                 <div className="bg-white rounded-2xl shadow-xl border border-gray-100">
-                    {jds.length === 0 ? (
+                    {loading ? (
+                        <div className="p-16 flex justify-center items-center">
+                            <Spinner size="md" color="#16A34A" />
+                        </div>
+                    ) : jds.length === 0 ? (
                         <div className="p-8 text-center text-gray-500">
                             No job descriptions yet. Create one to get started!
                         </div>
@@ -303,7 +331,7 @@ const JobDescription = () => {
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            handleDelete(jd.id);
+                                            openDeleteModal(jd.id, jd.title);
                                         }}
                                         className="text-red-500 hover:text-red-700 flex items-center gap-1"
                                     >
@@ -315,7 +343,7 @@ const JobDescription = () => {
                     )}
                 </div>
 
-                {/* Modal */}
+                {/* Main Modal */}
                 {showModal && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                         <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh] border border-gray-100">
@@ -613,7 +641,7 @@ const JobDescription = () => {
                                     <div>
                                         {selectedJD && (
                                             <button
-                                                onClick={() => handleDelete(selectedJD.id)}
+                                                onClick={() => openDeleteModal(selectedJD.id, selectedJD.title)}
                                                 className="px-4 py-2 text-red-600 border border-red-600 rounded hover:bg-red-50 flex items-center gap-2"
                                             >
                                                 <Trash2 size={16} /> Delete
@@ -674,6 +702,16 @@ const JobDescription = () => {
                         </div>
                     </div>
                 )}
+
+                {/* Delete Confirmation Modal */}
+                <ConfirmModal
+                    isOpen={deleteModal.isOpen}
+                    onClose={closeDeleteModal}
+                    onConfirm={() => handleDelete(deleteModal.itemId)}
+                    title="Delete Job Description"
+                    message="Are you sure you want to delete this job description?"
+                    itemName={deleteModal.itemName}
+                />
             </div>
         </div>
     );

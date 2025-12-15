@@ -179,16 +179,16 @@ const Register = () => {
   };
 
   return (
-    <div className="py-12 min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
       {/* Background Decorations */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-emerald-200 rounded-full blur-3xl opacity-20"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-300 rounded-full blur-3xl opacity-20"></div>
 
-      <div className="max-w-md w-full relative">
+      <div className="max-w-md w-full relative z-10">
         {/* Logo and Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-16 h-16 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
               <Briefcase className="w-9 h-9 text-white" />
             </div>
           </div>
@@ -202,15 +202,16 @@ const Register = () => {
 
         {/* Register Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Role Selection */}
             <div>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => {
-                    setFormData({ ...formData, role: "candidate" });
                     setFormData({...initialState, role: "candidate"});
+                    setSelectedFile(null);
+                    setErrors({});
                   }}
                   className={`py-3 px-4 rounded-lg border-2 transition ${
                     formData.role === "candidate"
@@ -224,8 +225,9 @@ const Register = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setFormData({ ...formData, role: "recruiter" });
                     setFormData({...initialState, role: "recruiter"});
+                    setSelectedFile(null);
+                    setErrors({});
                   }}
                   className={`py-3 px-4 rounded-lg border-2 transition ${
                     formData.role === "recruiter"
@@ -257,7 +259,7 @@ const Register = () => {
                   type="text"
                   value={formData.username}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition ${
+                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition ${
                     errors.username ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="johndoe"
@@ -286,7 +288,7 @@ const Register = () => {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition ${
+                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition ${
                     errors.email ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="you@example.com"
@@ -315,7 +317,7 @@ const Register = () => {
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition ${
+                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition ${
                     errors.password ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Enter your password"
@@ -355,7 +357,7 @@ const Register = () => {
                   type={showConfirmPassword ? "text" : "password"}
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition ${
+                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition ${
                     errors.confirmPassword
                       ? "border-red-500"
                       : "border-gray-300"
@@ -455,7 +457,7 @@ const Register = () => {
                       type="text"
                       value={formData.company_name}
                       onChange={handleChange}
-                      className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition ${
+                      className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition ${
                         errors.company_name
                           ? "border-red-500"
                           : "border-gray-300"
@@ -484,7 +486,7 @@ const Register = () => {
                     value={formData.company_description}
                     onChange={handleChange}
                     rows="3"
-                    className={`block w-full px-3 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition resize-none ${
+                    className={`block w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition resize-none ${
                       errors.company_description
                         ? "border-red-500"
                         : "border-gray-300"
@@ -507,16 +509,15 @@ const Register = () => {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className={`w-full flex justify-center items-center py-3 px-4 rounded-lg shadow-sm text-white font-semibold transition gap-2
-    ${
-      loading
-        ? "bg-emerald-400 cursor-not-allowed"
-        : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
-    }`}
+              className={`w-full flex justify-center items-center py-3 px-4 rounded-lg shadow-sm text-white font-semibold transition gap-2 ${
+                loading
+                  ? "bg-emerald-400 cursor-not-allowed"
+                  : "bg-emerald-600 hover:bg-emerald-700"
+              }`}
             >
               {loading && <Spinner size={"xs"} />}
               {loading ? "Registering..." : "Create Account"}
-              {!loading && <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />}
+              {!loading && <ArrowRight className="h-5 w-5" />}
             </button>
           </div>
         </div>

@@ -65,13 +65,6 @@ const Home = () => {
     }
   ];
 
-  const stats = [
-    { value: "95%", label: "Match Accuracy" },
-    { value: "10K+", label: "Resumes Analyzed" },
-    { value: "500+", label: "Companies" },
-    { value: "24/7", label: "AI Assistance" }
-  ];
-
   const benefits = [
     "ATS-optimized keyword matching",
     "Semantic similarity analysis",
@@ -136,20 +129,6 @@ const Home = () => {
               <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-emerald-200 rounded-full blur-3xl opacity-50"></div>
               <div className="absolute -top-4 -left-4 w-32 h-32 bg-emerald-300 rounded-full blur-3xl opacity-30"></div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-12 bg-emerald-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-4xl md:text-5xl font-bold text-white mb-2">{stat.value}</div>
-                <div className="text-emerald-100">{stat.label}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>

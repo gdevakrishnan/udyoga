@@ -151,7 +151,11 @@ const SubmitForm = ({ user, onSubmit, token }) => {
             Resume Source
           </label>
           <div className="space-y-3 mt-3">
-            <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-emerald-50">
+            <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${
+              formData.resumeSource === "default"
+                ? "border-emerald-600 bg-emerald-50"
+                : "border-gray-300 hover:border-gray-400"
+            }`}>
               <input
                 type="radio"
                 name="resumeSource"
@@ -160,6 +164,7 @@ const SubmitForm = ({ user, onSubmit, token }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, resumeSource: e.target.value })
                 }
+                className="w-4 h-4 text-emerald-600"
               />
               <div className="ml-3 flex items-center">
                 <FileText className="w-5 h-5 mr-2 text-emerald-600" />
@@ -170,7 +175,11 @@ const SubmitForm = ({ user, onSubmit, token }) => {
               </div>
             </label>
 
-            <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-emerald-50">
+            <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${
+              formData.resumeSource === "custom"
+                ? "border-emerald-600 bg-emerald-50"
+                : "border-gray-300 hover:border-gray-400"
+            }`}>
               <input
                 type="radio"
                 name="resumeSource"
@@ -179,6 +188,7 @@ const SubmitForm = ({ user, onSubmit, token }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, resumeSource: e.target.value })
                 }
+                className="w-4 h-4 text-emerald-600"
               />
               <div className="ml-3 flex items-center">
                 <Upload className="w-5 h-5 mr-2 text-emerald-600" />
@@ -193,7 +203,9 @@ const SubmitForm = ({ user, onSubmit, token }) => {
                     type="file"
                     accept=".pdf,.docx"
                     onChange={handleResumeUpload}
-                    className="w-full p-3 border rounded-lg"
+                    className={`w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition ${
+                      errors.resumeText ? "border-red-500" : "border-gray-300"
+                    }`}
                   />
                   {parsedSuccess && (
                     <Check className="text-emerald-600 w-6 h-6" />
@@ -218,7 +230,11 @@ const SubmitForm = ({ user, onSubmit, token }) => {
             Job Description
           </label>
           <div className="space-y-3 mt-3">
-            <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-emerald-50">
+            <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${
+              formData.jdSource === "url"
+                ? "border-emerald-600 bg-emerald-50"
+                : "border-gray-300 hover:border-gray-400"
+            }`}>
               <input
                 type="radio"
                 name="jdSource"
@@ -227,6 +243,7 @@ const SubmitForm = ({ user, onSubmit, token }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, jdSource: e.target.value })
                 }
+                className="w-4 h-4 text-emerald-600"
               />
               <div className="ml-3 flex items-center">
                 <Link2 className="w-5 h-5 mr-2 text-emerald-600" /> Job
@@ -234,7 +251,11 @@ const SubmitForm = ({ user, onSubmit, token }) => {
               </div>
             </label>
 
-            <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-emerald-50">
+            <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${
+              formData.jdSource === "text"
+                ? "border-emerald-600 bg-emerald-50"
+                : "border-gray-300 hover:border-gray-400"
+            }`}>
               <input
                 type="radio"
                 name="jdSource"
@@ -243,6 +264,7 @@ const SubmitForm = ({ user, onSubmit, token }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, jdSource: e.target.value })
                 }
+                className="w-4 h-4 text-emerald-600"
               />
               <div className="ml-3 flex items-center">
                 <FileText className="w-5 h-5 mr-2 text-emerald-600" /> Paste Job
@@ -254,7 +276,9 @@ const SubmitForm = ({ user, onSubmit, token }) => {
               <div className="flex gap-2 mt-3">
                 <input
                   type="url"
-                  className="w-full p-3 border rounded-lg"
+                  className={`w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition ${
+                    errors.jdUrl ? "border-red-500" : "border-gray-300"
+                  }`}
                   placeholder="https://example.com/job"
                   value={formData.jdUrl}
                   onChange={(e) =>
@@ -264,7 +288,7 @@ const SubmitForm = ({ user, onSubmit, token }) => {
                 <button
                   onClick={handleFetch}
                   disabled={fetching}
-                  className={`bg-emerald-600 text-white px-6 rounded-lg flex items-center ${
+                  className={`bg-emerald-600 text-white px-6 rounded-lg flex items-center hover:bg-emerald-700 transition ${
                     fetching ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                 >
@@ -279,7 +303,9 @@ const SubmitForm = ({ user, onSubmit, token }) => {
             {formData.jdSource === "text" && (
               <textarea
                 rows={6}
-                className="w-full p-3 border rounded-lg"
+                className={`w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition resize-none ${
+                  errors.jdText ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="Paste JD text..."
                 value={formData.jdText}
                 onChange={(e) =>
@@ -296,7 +322,7 @@ const SubmitForm = ({ user, onSubmit, token }) => {
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className={`w-full bg-emerald-600 text-white p-3 rounded-lg font-semibold flex justify-center items-center gap-2 ${
+          className={`w-full bg-emerald-600 text-white p-3 rounded-lg font-semibold flex justify-center items-center gap-2 hover:bg-emerald-700 transition ${
             submitting ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
