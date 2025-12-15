@@ -1,15 +1,40 @@
 import React, { Fragment, useState, useEffect } from "react";
 import AppRouter from "./router/Router";
 import AppContext from "./context/AppContext";
-import { getUserDetails, refreshAccessToken } from "./serviceWorkers/AuthServiceWorker";
+import {
+  getUserDetails,
+  refreshAccessToken,
+} from "./serviceWorkers/AuthServiceWorker";
 import Spinner from "./components/utils/Spinner";
+import ToastProvider from "./components/utils/ToastProvider";
+import { toast } from "react-toastify";
 
 const App = () => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if user is already logged in on app load
+  // Common toast states
+  const [success, setSuccess] = useState("boo");
+  const [error, setError] = useState("hi");
+
+  // Success Toast Handler
+  useEffect(() => {
+    if (success) {
+      toast.success(success);
+      setSuccess("");
+    }
+  }, [success]);
+
+  // Error Toast Handler
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      setError("");
+    }
+  }, [error]);
+
+  // Initialize authentication
   useEffect(() => {
     const initializeAuth = async () => {
       const accessToken = localStorage.getItem("udhyoga_access_token");
@@ -17,35 +42,32 @@ const App = () => {
 
       if (accessToken && refreshToken) {
         try {
-          // Try to fetch user details with existing access token
           const userData = await getUserDetails();
 
-          if (userData.error) {
-            // If access token is expired, try to refresh it
+          if (userData?.error) {
             const refreshResult = await refreshAccessToken();
 
-            if (!refreshResult.error) {
-              // Retry fetching user details with new access token
+            if (!refreshResult?.error) {
               const retryUserData = await getUserDetails();
 
-              if (!retryUserData.error) {
-                setUser(retryUserData);
+              if (!retryUserData?.error) {
+                setUser(retryUserData?.data);
                 setIsAuthenticated(true);
               } else {
-                // If still fails, clear tokens and logout
+                setError("Session expired. Please login again.");
                 logout();
               }
             } else {
-              // Refresh token is also invalid, logout
+              setError("Session expired. Please login again.");
               logout();
             }
           } else {
-            // Successfully got user data
             setUser(userData?.data);
             setIsAuthenticated(true);
           }
-        } catch (error) {
-          console.error("Auth initialization error:", error);
+        } catch (err) {
+          console.error("Auth initialization error:", err);
+          setError("Authentication failed");
           logout();
         }
       }
@@ -56,19 +78,18 @@ const App = () => {
     initializeAuth();
   }, []);
 
-  // Set up automatic token refresh before expiration
+  // Auto refresh token
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // Refresh token every 14 minutes (assuming 15 min token expiry)
     const refreshInterval = setInterval(async () => {
       const result = await refreshAccessToken();
-      
-      if (result.error) {
-        console.error("Token refresh failed, logging out");
+
+      if (result?.error) {
+        setError("Session expired. Logging out.");
         logout();
       }
-    }, 14 * 60 * 1000); // 14 minutes
+    }, 14 * 60 * 1000);
 
     return () => clearInterval(refreshInterval);
   }, [isAuthenticated]);
@@ -87,25 +108,31 @@ const App = () => {
     isLoading,
     setUser,
     setIsAuthenticated,
-    logout
+    logout,
+    success,
+    setSuccess,
+    error,
+    setError,
   };
 
-  // Show loading state while checking authentication
   if (isLoading) {
     return (
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center", 
-        height: "100vh" 
-      }}>
-        <Spinner size="xl" color="#16A34A"/>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <Spinner size="xl" color="#16A34A" />
       </div>
     );
   }
 
   return (
     <Fragment>
+      <ToastProvider />
       <AppContext.Provider value={context}>
         <AppRouter />
       </AppContext.Provider>

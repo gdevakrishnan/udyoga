@@ -104,13 +104,13 @@ const QueryChat = ({ data, token, chatHistory, setChatHistory }) => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
-          className="flex-1 p-3 border rounded-lg"
+          className="flex-1 p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
           placeholder="Ask a question..."
           disabled={loading}
         />
         <button
           onClick={send}
-          className={`bg-emerald-600 text-white px-6 rounded-lg flex items-center gap-2 ${
+          className={`bg-emerald-600 text-white px-6 rounded-lg flex items-center gap-2 hover:bg-emerald-700 transition ${
             loading ? "opacity-50 cursor-not-allowed" : ""
           }`}
           disabled={loading}

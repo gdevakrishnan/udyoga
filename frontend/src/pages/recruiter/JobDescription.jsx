@@ -106,7 +106,7 @@ const JobDescription = () => {
 
     const handleGenerate = async () => {
         if (!form.title || !form.location) {
-            alert("Title and location are required");
+            setError("Title and location are required");
             return;
         }
 
@@ -132,12 +132,13 @@ const JobDescription = () => {
                 
                 setGeneratedContent(generated);
                 setModalStep("preview");
+                setSuccess("JD generated successfully")
             } else {
-                alert("Failed to generate JD");
+                setError("Failed to generate JD");
             }
         } catch (err) {
             console.error(err);
-            alert("Something went wrong");
+            setError("Something went wrong");
         } finally {
             setGenerating(false);
         }
@@ -203,7 +204,7 @@ const JobDescription = () => {
 
     const handleSave = async () => {
         if (!form.title || !form.department) {
-            alert("Title and Department are required");
+            setError("Title and Department are required");
             return;
         }
 
@@ -243,8 +244,9 @@ const JobDescription = () => {
             setForm(emptyJD);
             setGeneratedContent(null);
             setCopied(false);
+            setSuccess("JD saved successfully");
         } else {
-            alert(res?.message || "Failed to save JD");
+            setError(res?.message || "Failed to save JD");
         }
     };
 

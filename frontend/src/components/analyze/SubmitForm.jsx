@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { FileText, Link2, ArrowRight, Upload, Check } from "lucide-react";
 import Spinner from "../utils/Spinner";
 import {
@@ -6,6 +6,7 @@ import {
   scrapeJobDescData,
 } from "../../serviceWorkers/AiServiceWorker";
 import { parseResumeFile } from "../../utils/fileParser";
+import AppContext from "../../context/AppContext";
 
 const SubmitForm = ({ user, onSubmit, token }) => {
   const [formData, setFormData] = useState({
@@ -21,6 +22,8 @@ const SubmitForm = ({ user, onSubmit, token }) => {
   const [submitting, setSubmitting] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [parsedSuccess, setParsedSuccess] = useState(false);
+
+  const { setSuccess, setError } = useContext(AppContext);
 
   const detectBrowser = async () => {
     try {
@@ -46,7 +49,7 @@ const SubmitForm = ({ user, onSubmit, token }) => {
     setParsing(false);
 
     if (!result.success) {
-      alert(result.error);
+      setError(result.error);
       return;
     }
 
@@ -57,7 +60,7 @@ const SubmitForm = ({ user, onSubmit, token }) => {
     }));
 
     setParsedSuccess(true);
-    alert("Resume parsed successfully");
+    setSuccess("Resume parsed successfully");
   };
 
   const isValidUrl = (url) => {
@@ -86,9 +89,9 @@ const SubmitForm = ({ user, onSubmit, token }) => {
   };
 
   const handleFetch = async () => {
-    if (!token) return alert("Login required");
+    if (!token) return setError("Login required");
     if (!formData.jdUrl.trim() || !isValidUrl(formData.jdUrl))
-      return alert("Enter valid URL");
+      return setError("Enter valid URL");
 
     try {
       setFetching(true);
@@ -101,10 +104,10 @@ const SubmitForm = ({ user, onSubmit, token }) => {
           jdText: response.data.data.text,
           jdSource: "text",
         }));
-        alert("Job description fetched successfully");
+        setSuccess("Job description fetched successfully");
       }
     } catch (e) {
-      alert("Failed to fetch JD");
+      setError("Failed to fetch JD");
     } finally {
       setFetching(false);
     }
@@ -127,7 +130,7 @@ const SubmitForm = ({ user, onSubmit, token }) => {
     try {
       const response = await getEmbeddingsResumeJd(payload, token);
       if (response.status === 200 || response.status === 201) {
-        alert(response?.data?.message || "Analyzed successfully");
+        setSuccess(response?.data?.message || "Analyzed successfully");
         onSubmit({
           jd_emb: response?.data?.data?.jd_embedding,
           resume_emb: response?.data?.data?.resume_embedding,

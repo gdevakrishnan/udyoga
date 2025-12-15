@@ -6,7 +6,7 @@ import Spinner from "../../components/utils/Spinner";
 import AppContext from "../../context/AppContext";
 
 const Login = () => {
-  const { setUser, setIsAuthenticated } = useContext(AppContext);
+  const { setUser, setIsAuthenticated, setSuccess, setError } = useContext(AppContext);
 
   const [showPassword, setShowPassword] = useState(false);
   const initialState = {
@@ -67,7 +67,7 @@ const Login = () => {
                 setUser(response?.data?.user);
                 setIsAuthenticated(true);
               }
-              alert(
+              setSuccess(
                 response?.data?.message
                   ? response?.data?.message
                   : "Login successfully"
@@ -83,15 +83,15 @@ const Login = () => {
           })
           .catch((e) => {
             console.log(e.message);
-            alert("Login Failed!");
           });
       } catch (err) {
+        setError("Login Failed!");
         console.error(err);
       } finally {
         setLoading(false);
       }
     } else {
-      alert("Please fix the errors in the form");
+      setError("Please fix the errors in the form");
     }
   };
 

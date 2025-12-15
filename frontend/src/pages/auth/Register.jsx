@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Briefcase,
   Mail,
@@ -14,8 +14,10 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../../serviceWorkers/AuthServiceWorker";
 import Spinner from "../../components/utils/Spinner";
+import AppContext from "../../context/AppContext";
 
 const Register = () => {
+  const { setSuccess, setError } = useContext(AppContext);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -161,7 +163,7 @@ const Register = () => {
         await registerUser(submitData)
           .then(response => {
             if (response.status == 201 || response.status == 200) {
-              alert(response?.data?.message ? response?.data?.message : "Registered successfully");
+              setSuccess(response?.data?.message ? response?.data?.message : "Registered successfully");
               navigate('/login');
               setFormData(initialState);
             }
@@ -169,12 +171,12 @@ const Register = () => {
           .catch(e => e.message);
       } catch (err) {
         console.error(err);
-        alert("Registration failed!");
+        setError("Registration failed!");
       } finally {
         setLoading(false);
       }
     } else {
-      alert("Please fix the errors in the form");
+      setError("Please fix the errors in the form");
     }
   };
 
