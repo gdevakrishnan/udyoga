@@ -55,45 +55,52 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async () => {
-    if (validateForm()) {
-      setLoading(true);
+ const handleSubmit = async () => {
+  if (!validateForm()) {
+    setError("Please fix the errors in the form");
+    return;
+  }
 
-      try {
-        await loginUser(formData)
-          .then((response) => {
-            if (response.status == 201 || response.status == 200) {
-              if (response?.data?.user) {
-                setUser(response?.data?.user);
-                setIsAuthenticated(true);
-              }
-              setSuccess(
-                response?.data?.message
-                  ? response?.data?.message
-                  : "Login successfully"
-              );
+  setLoading(true);
 
-              if (response?.data?.user?.role) {
-                navigate(`/${response?.data?.user?.role}`);
-              } else {
-                navigate("/");
-              }
-              setFormData(initialState);
-            }
-          })
-          .catch((e) => {
-            console.log(e.message);
-          });
-      } catch (err) {
-        setError("Login Failed!");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      setError("Please fix the errors in the form");
+  try {
+    const response = await loginUser(formData);
+
+    if (response?.error) {
+      setError(
+        response?.message?.detail ||
+        response?.message ||
+        "Login failed"
+      );
+      return;
     }
-  };
+
+    if (response.status === 200 || response.status === 201) {
+      if (response.data?.user) {
+        setUser(response.data.user);
+        setIsAuthenticated(true);
+      }
+
+      setSuccess(
+        response.data?.message || "Login successfully"
+      );
+
+      navigate(
+        response.data?.user?.role
+          ? `/${response.data.user.role}`
+          : "/"
+      );
+
+      setFormData(initialState);
+    }
+  } catch (err) {
+    setError("Something went wrong. Please try again.");
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-linear-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">

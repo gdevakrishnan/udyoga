@@ -4,6 +4,7 @@ import AppContext from "./context/AppContext";
 import {
   getUserDetails,
   refreshAccessToken,
+  logoutUser,
 } from "./serviceWorkers/AuthServiceWorker";
 import Spinner from "./components/utils/Spinner";
 import ToastProvider from "./components/utils/ToastProvider";
@@ -14,11 +15,12 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Common toast states
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
-  // Success Toast Handler
+  // -----------------------
+  // Toast handlers
+  // -----------------------
   useEffect(() => {
     if (success) {
       toast.success(success);
@@ -26,7 +28,6 @@ const App = () => {
     }
   }, [success]);
 
-  // Error Toast Handler
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -34,7 +35,24 @@ const App = () => {
     }
   }, [error]);
 
-  // Initialize authentication
+  // -----------------------
+  // Logout (UPDATED)
+  // -----------------------
+  const logout = async (showMessage = true) => {
+    await logoutUser()
+      .then((response) => {
+        setSuccess("Logged out successfully");
+        setUser(null);
+        setIsAuthenticated(false);
+      })
+      .catch((e) => {
+        console.log(e.message)
+      });
+  };
+
+  // -----------------------
+  // Initialize auth
+  // -----------------------
   useEffect(() => {
     const initializeAuth = async () => {
       const accessToken = localStorage.getItem("udhyoga_access_token");
@@ -51,24 +69,24 @@ const App = () => {
               const retryUserData = await getUserDetails();
 
               if (!retryUserData?.error) {
-                setUser(retryUserData?.data);
+                setUser(retryUserData.data);
                 setIsAuthenticated(true);
               } else {
                 setError("Session expired. Please login again.");
-                logout();
+                await logout();
               }
             } else {
               setError("Session expired. Please login again.");
-              logout();
+              await logout();
             }
           } else {
-            setUser(userData?.data);
+            setUser(userData.data);
             setIsAuthenticated(true);
           }
         } catch (err) {
           console.error("Auth initialization error:", err);
           setError("Authentication failed");
-          logout();
+          await logout();
         }
       }
 
@@ -78,7 +96,9 @@ const App = () => {
     initializeAuth();
   }, []);
 
+  // -----------------------
   // Auto refresh token
+  // -----------------------
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -87,21 +107,16 @@ const App = () => {
 
       if (result?.error) {
         setError("Session expired. Logging out.");
-        logout();
+        await logout();
       }
     }, 14 * 60 * 1000);
 
     return () => clearInterval(refreshInterval);
   }, [isAuthenticated]);
 
-  const logout = () => {
-    setIsAuthenticated(false);
-    setUser(null);
-
-    localStorage.removeItem("udhyoga_access_token");
-    localStorage.removeItem("udhyoga_refresh_token");
-  };
-
+  // -----------------------
+  // Context
+  // -----------------------
   const context = {
     user,
     isAuthenticated,
@@ -115,6 +130,9 @@ const App = () => {
     setError,
   };
 
+  // -----------------------
+  // Loader
+  // -----------------------
   if (isLoading) {
     return (
       <div

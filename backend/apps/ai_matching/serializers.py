@@ -1,30 +1,22 @@
 from rest_framework import serializers
 
+
 class ScrapeSerializer(serializers.Serializer):
-    url = serializers.URLField(
-        required=True,
-        help_text="The URL of the webpage to scrape"
-    )
+    url = serializers.URLField(required=True)
+
 
 class ResumeJDSerializer(serializers.Serializer):
-    type = serializers.ChoiceField(
-        choices=["custom", "default"],
-        required=True
-    )
-    resume_url = serializers.URLField(required=False, allow_null=True, allow_blank=True)
+    type = serializers.ChoiceField(choices=["custom", "default"])
+    resume_url = serializers.URLField(required=False, allow_blank=True)
     resume_text = serializers.CharField(required=False, allow_blank=True)
-    jd_text = serializers.CharField(required=True)
+    jd_text = serializers.CharField()
 
     def validate(self, attrs):
-        resume_type = attrs.get("type")
+        if attrs["type"] == "custom" and not attrs.get("resume_text"):
+            raise serializers.ValidationError("resume_text required for custom type")
 
-        if resume_type == "custom":
-            if not attrs.get("resume_text") or not attrs["resume_text"].strip():
-                raise serializers.ValidationError("resume_text is required for type=custom")
-
-        if resume_type == "default":
-            if not attrs.get("resume_url"):
-                raise serializers.ValidationError("resume_url is required for type=default")
+        if attrs["type"] == "default" and not attrs.get("resume_url"):
+            raise serializers.ValidationError("resume_url required for default type")
 
         return attrs
 
@@ -35,15 +27,13 @@ class EmbeddingResponseSerializer(serializers.Serializer):
     jd_text = serializers.CharField()
     jd_embedding = serializers.ListField(child=serializers.FloatField())
 
+
 class AnalyzeRequestSerializer(serializers.Serializer):
-    jd_emb = serializers.ListField(
-        child=serializers.FloatField(), allow_empty=False
-    )
-    resume_emb = serializers.ListField(
-        child=serializers.FloatField(), allow_empty=False
-    )
+    jd_emb = serializers.ListField(child=serializers.FloatField())
+    resume_emb = serializers.ListField(child=serializers.FloatField())
     jd_text = serializers.CharField()
     resume_text = serializers.CharField()
+
 
 class QueryRequestSerializer(serializers.Serializer):
     jd_emb = serializers.ListField(child=serializers.FloatField())

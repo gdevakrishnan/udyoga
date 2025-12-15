@@ -45,8 +45,13 @@ export const loginUser = async (payload) => {
 export const logoutUser = async () => {
   try {
     const refresh = localStorage.getItem("udhyoga_refresh_token");
+    const access = localStorage.getItem("udhyoga_access_token");
 
-    await axios.post(`${BASE_URL}auth/logout/`, { refresh });
+    await axios.post(`${BASE_URL}auth/logout/`, { refresh }, {
+      headers: {
+        "Authorization": `Bearer ${access}`
+      }
+    });
 
     localStorage.removeItem("udhyoga_access_token");
     localStorage.removeItem("udhyoga_refresh_token");
