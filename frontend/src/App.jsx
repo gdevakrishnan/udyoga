@@ -15,8 +15,8 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Common toast states
-  const [success, setSuccess] = useState("boo");
-  const [error, setError] = useState("hi");
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
   // Success Toast Handler
   useEffect(() => {
