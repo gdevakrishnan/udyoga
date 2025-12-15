@@ -9,15 +9,6 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from huggingface_hub import InferenceClient
 
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.edge.options import Options as EdgeOptions
-
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.edge.service import Service as EdgeService
-
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
@@ -26,6 +17,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+
+from bs4 import BeautifulSoup
+import requests
+from urllib.parse import urljoin, urlparse
+
+from .permissions import IsCandidate
+from .serializers import ScrapeSerializer
 
 from .permissions import IsCandidate
 from .serializers import (
@@ -49,46 +47,6 @@ client = InferenceClient(
 
 MAX_TEXT_CHARS = 8000
 
-
-# ======================================================
-#           SELENIUM BROWSER SELECTOR
-# ======================================================
-def get_selenium_driver(browser="chrome"):
-    browser = browser.lower()
-
-    if browser in ["chrome", "brave"]:
-        options = ChromeOptions()
-        options.add_argument("--headless=new")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--window-size=1920,1080")
-        chromium_path = "/usr/bin/chromium" 
-        if os.path.exists(chromium_path):
-            options.binary_location = chromium_path
-
-        return webdriver.Chrome(
-            service=ChromeService(ChromeDriverManager().install()),
-            options=options
-        )
-
-    if browser == "firefox":
-        options = FirefoxOptions()
-        options.add_argument("-headless")
-        return webdriver.Firefox(
-            service=FirefoxService(GeckoDriverManager().install()),
-            options=options
-        )
-
-    if browser == "edge":
-        options = EdgeOptions()
-        options.add_argument("--headless=new")
-        return webdriver.Edge(
-            service=EdgeService(EdgeChromiumDriverManager().install()),
-            options=options
-        )
-
-    raise ValueError("Unsupported browser")
-
 # ======================================================
 #               SCRAPER VIEW
 # ======================================================
@@ -100,24 +58,36 @@ class ScrapeAPIView(APIView):
         serializer.is_valid(raise_exception=True)
 
         url = serializer.validated_data["url"]
-        browser = serializer.validated_data.get("browser", "chrome")
+        max_depth = serializer.validated_data.get("max_depth", 2)  # recursive depth limit
 
-        driver = None
-        try:
-            driver = get_selenium_driver(browser)
-            driver.get(url)
-            html = driver.page_source
-        finally:
-            if driver:
-                driver.quit()
+        visited = set()
 
-        soup = BeautifulSoup(html, "html.parser")
+        def scrape_page(url, depth=0):
+            if url in visited or depth > max_depth:
+                return ""
 
-        clean_text = "\n".join(
-            line.strip()
-            for line in soup.get_text(separator="\n").splitlines()
-            if line.strip()
-        )
+            try:
+                response = requests.get(url, timeout=10)
+                response.raise_for_status()
+                visited.add(url)
+            except requests.RequestException:
+                return ""
+
+            soup = BeautifulSoup(response.text, "html.parser")
+            page_text = "\n".join(
+                line.strip() for line in soup.get_text(separator="\n").splitlines() if line.strip()
+            )
+
+            # Follow internal links for deep scraping
+            domain = urlparse(url).netloc
+            for link_tag in soup.find_all("a", href=True):
+                link = urljoin(url, link_tag["href"])
+                if urlparse(link).netloc == domain:
+                    page_text += "\n" + scrape_page(link, depth + 1)
+
+            return page_text
+
+        clean_text = scrape_page(url)
 
         return Response(
             {
@@ -129,8 +99,7 @@ class ScrapeAPIView(APIView):
             },
             status=status.HTTP_200_OK
         )
-
-
+    
 # ======================================================
 #                 EMBEDDINGS VIEW
 # ======================================================
