@@ -522,7 +522,7 @@ const JobDescription = () => {
                                 )}
 
                                 {/* View Existing JD or Edit Mode */}
-                                {modalStep === "preview" && (
+                                {modalStep === "preview" && (selectedJD || isEdit) && (
                                     <div>
                                         {/* Basic Info Display */}
                                         <div className="mb-6 p-4 bg-gray-50 rounded-lg">
